@@ -3,68 +3,71 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Text Insight — Local AI + Visible Loader</title>
+  <title>Text Insight — Formality • Emotion • Grammar Fix (Local AI + Loader)</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <style>
-    :root { --bg:#0b1020; --panel:#121a33; --muted:#8ea0c0; --text:#e8eeff; --accent:#7aa2ff; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --card:#0f1530; --chip:#1b2547; --shadow:0 10px 25px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05); --radius:16px; }
-    *{box-sizing:border-box} html,body{height:100%} body{margin:0;background:radial-gradient(1200px 800px at 20% -10%, #1f2a55 0%, transparent 60%),radial-gradient(1000px 600px at 120% 20%, #1a2a4f 0%, transparent 60%),var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+    :root{--bg:#0b1020;--panel:#121a33;--muted:#8ea0c0;--text:#e8eeff;--accent:#7aa2ff;--accent-2:#22c55e;--warn:#f59e0b;--bad:#ef4444;--card:#0f1530;--chip:#1b2547;--shadow:0 10px 25px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05);--radius:16px}
+    *{box-sizing:border-box}html,body{height:100%}body{margin:0;background:radial-gradient(1200px 800px at 20% -10%,#1f2a55 0,transparent 60%),radial-gradient(1000px 600px at 120% 20%,#1a2a4f 0,transparent 60%),var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
     header{position:sticky;top:0;z-index:9;backdrop-filter:saturate(140%) blur(10px);background:#0b1020cc;border-bottom:1px solid #ffffff14}
     .wrap{max-width:1200px;margin:0 auto;padding:20px}
     h1{font-size:clamp(22px,3vw,30px);margin:6px 0 2px;letter-spacing:.2px}
     .sub{color:var(--muted);font-size:14px}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}
     @media (max-width:980px){.grid{grid-template-columns:1fr}}
-    .card{background:linear-gradient(180deg,#141d3a 0%,#0f1631 100%);border:1px solid #ffffff1a;border-radius:var(--radius);box-shadow:var(--shadow)}
+    .card{background:linear-gradient(180deg,#141d3a 0,#0f1631 100%);border:1px solid #ffffff1a;border-radius:var(--radius);box-shadow:var(--shadow)}
+    .card h2{font-size:16px;font-weight:700;letter-spacing:.3px;margin:0 0 10px}
     .card .hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid #ffffff12}
-    .card h2{font-size:16px;margin:0}
-    textarea#input{width:100%;min-height:260px;resize:vertical;color:var(--text);background:#0a0f23;border:1px solid #ffffff1a;border-radius:12px;padding:14px;outline:none}
+    .card .body{padding:14px 16px}
+    textarea#input{width:100%;min-height:300px;resize:vertical;color:var(--text);background:#0a0f23;border:1px solid #ffffff1a;border-radius:12px;padding:14px;outline:none;box-shadow:inset 0 0 0 1px transparent;transition:box-shadow .2s ease,border-color .2s ease}
     textarea#input:focus{border-color:#7aa2ff66;box-shadow:0 0 0 6px #7aa2ff18}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .btn{appearance:none;border:0;border-radius:999px;padding:10px 14px;font-weight:600;cursor:pointer;color:#0b1020;background:linear-gradient(180deg,#a8c2ff,#6c94ff);box-shadow:var(--shadow)}
-    .btn.secondary{background:#24325f;color:#c7d6ff;border:1px solid #3c4a7d}
-    .btn.ghost{background:transparent;color:#c7d6ff;border:1px solid #ffffff2a}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .row.right{justify-content:flex-end}
+    .btn{appearance:none;border:0;border-radius:999px;padding:10px 14px;font-weight:600;cursor:pointer;color:#0b1020;background:linear-gradient(180deg,#a8c2ff,#6c94ff);box-shadow:var(--shadow);transition:transform .05s ease}
+    .btn:hover{transform:translateY(-1px)}.btn.secondary{background:#24325f;color:#c7d6ff;border:1px solid #3c4a7d}.btn.ghost{background:transparent;color:var(--muted);border:1px solid #ffffff18}
+    .summary{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:720px){.summary{grid-template-columns:1fr}}
+    .metric{background:var(--card);border:1px solid #ffffff15;border-radius:12px;padding:12px}.metric .label{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+    .bar{position:relative;height:10px;margin-top:8px;background:#1b2547;border-radius:999px;overflow:hidden;border:1px solid #ffffff10}
+    .bar>span{position:absolute;inset:0 0 0 0;width:0%;background:linear-gradient(90deg,#6c94ff,#4fd1c5);transition:width .5s ease}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}.chip{background:var(--chip);color:#cfe1ff;padding:4px 10px;border:1px solid #ffffff1a;border-radius:999px;font-size:12px}
+    .tabbar{display:flex;gap:8px;border-bottom:1px solid #ffffff12;padding:0 16px}
+    .tabbar button{background:transparent;color:#baceff;border:0;padding:12px 8px;font-weight:600;cursor:pointer;position:relative}
+    .tabbar button.active::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:linear-gradient(90deg,#6c94ff,#4fd1c5);border-radius:2px}
+    .tab{display:none}.tab.active{display:block}
+    pre,code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+    .fix-list li{margin:6px 0}
+    .outbox{background:#0a0f23;border:1px solid #ffffff1a;border-radius:12px;padding:12px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media (max-width:980px){.split{grid-template-columns:1fr}}
+    mark{background:#fde68a;color:#0b1020;padding:0 2px;border-radius:3px}
+    .small{color:var(--muted);font-size:12px}
+    .footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 40px}
+    /* Loader */
+    .loader{display:none;margin-top:10px;background:#0a0f23;border:1px solid #ffffff1a;border-radius:12px;padding:10px}
+    .loader.active{display:block}
+    .progress{height:8px;background:#18234a;border-radius:999px;overflow:hidden;border:1px solid #ffffff18;margin-top:8px}
+    .progress>span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#7aa2ff,#22c55e)}
+    .status-ok{color:#22c55e}.status-warn{color:#f59e0b}.status-bad{color:#ef4444}
     .toggle{display:flex;align-items:center;gap:8px}
     .toggle input{width:42px;height:24px;appearance:none;border-radius:999px;background:#20305f;position:relative;outline:none;cursor:pointer;border:1px solid #3c4a7d}
     .toggle input:checked{background:#4f7cff}
     .toggle input::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:#e8eeff;border-radius:50%;transition:.2s}
     .toggle input:checked::after{transform:translateX(18px)}
-
-    .summary{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width:720px){.summary{grid-template-columns:1fr}}
-    .metric{background:var(--card);border:1px solid #ffffff15;border-radius:12px;padding:12px}
-    .metric .label{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
-    .bar{position:relative;height:10px;margin-top:8px;background:#1b2547;border-radius:999px;overflow:hidden;border:1px solid #ffffff10}
-    .bar>span{position:absolute;inset:0;width:0%;background:linear-gradient(90deg,#6c94ff,#4fd1c5)}
-    .chip{background:#1b2547;color:#cfe1ff;padding:4px 10px;border:1px solid #ffffff1a;border-radius:999px;font-size:12px;margin:0 6px 6px 0;display:inline-block}
-    .outbox{background:#0a0f23;border:1px solid #ffffff1a;border-radius:12px;padding:12px}
-    .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width:980px){.split{grid-template-columns:1fr}}
-    mark{background:#fde68a;color:#0b1020;padding:0 2px;border-radius:3px}
-    .small{color:var(--muted);font-size:12px}
-    .footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 40px}
-
-    /* Loader panel */
-    .loader{display:none;margin-top:10px;background:#0a0f23;border:1px solid #ffffff1a;border-radius:12px;padding:10px}
-    .loader.active{display:block}
-    .loader .row{justify-content:space-between}
-    .progress{height:8px;background:#18234a;border-radius:999px;overflow:hidden;border:1px solid #ffffff18;margin-top:8px}
-    .progress>span{display:block;height:100%;width:0%;background:linear-gradient(90deg,#7aa2ff,#22c55e)}
-    .status-ok{color:var(--ok)} .status-warn{color:var(--warn)} .status-bad{color:var(--bad)}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
   </style>
 </head>
 <body>
   <header>
     <div class="wrap">
-      <h1>Text Insight — Local AI + Visible Loader</h1>
-      <div class="sub">Formality • Emotion • Grammar — works offline with a tiny on‑device model (WebGPU). Falls back to classic analysis if unavailable.</div>
+      <h1>Text Insight</h1>
+      <div class="sub">Analyze formality, detect emotion, and auto‑fix grammar. Optional Local AI runs fully in‑browser; visible loader included.</div>
     </div>
   </header>
 
   <main class="wrap">
     <div class="grid">
+      <!-- INPUT -->
       <section class="card">
         <div class="hdr">
-          <h2>Input</h2>
+          <h2>Paste or type your text</h2>
           <div class="row">
             <label class="toggle small"><input id="useLocal" type="checkbox"> Use Local AI</label>
             <select id="model" class="small" style="background:#0a0f23;color:#e8eeff;border:1px solid #ffffff2a;border-radius:10px;padding:6px 8px">
@@ -72,7 +75,7 @@
               <option value="Phi-3-mini-4k-instruct-q4f32_1-MLC">Phi‑3 mini 4K</option>
               <option value="Llama-3.2-1B-Instruct-q4f32_1-MLC">Llama‑3.2‑1B</option>
             </select>
-            <button class="btn ghost" id="sample">Sample</button>
+            <button class="btn ghost" id="sample">Insert sample</button>
             <button class="btn secondary" id="clear">Clear</button>
             <button class="btn" id="analyze">Analyze ⏵</button>
           </div>
@@ -80,173 +83,128 @@
         <div class="body">
           <textarea id="input" spellcheck="true" placeholder="Write or paste text here…"></textarea>
           <div class="small" style="margin-top:8px">Shortcuts: <span class="mono">Ctrl/Cmd+Enter</span> analyze • <span class="mono">Ctrl/Cmd+B</span> copy corrected.</div>
-          <!-- Visible loader/status -->
+          <!-- loader/status panel -->
           <div id="loader" class="loader">
-            <div class="row"><div class="small">Model: <span class="mono" id="mname">–</span></div><div class="small" id="gpuStat">Checking WebGPU…</div></div>
+            <div class="row" style="justify-content:space-between">
+              <div class="small">Model: <span class="mono" id="mname">–</span></div>
+              <div class="small" id="gpuStat">Checking WebGPU…</div>
+            </div>
             <div class="progress"><span id="pbar"></span></div>
             <div class="small" id="status">Idle.</div>
           </div>
         </div>
       </section>
 
+      <!-- OUTPUT SUMMARY -->
       <section class="card">
         <div class="hdr">
           <h2>Summary</h2>
-          <div id="flags"></div>
+          <div class="chips" id="flags"></div>
         </div>
         <div class="body">
           <div class="summary">
-            <div class="metric"><div class="label"><span>Formality</span><strong id="formalityLabel">–</strong></div><div class="bar"><span id="formalityBar"></span></div><div class="small" id="formalityNotes"></div></div>
-            <div class="metric"><div class="label"><span>Overall Sentiment</span><strong id="sentimentLabel">–</strong></div><div class="bar"><span id="sentimentBar"></span></div><div class="small" id="sentimentNotes"></div></div>
-            <div class="metric"><div class="label"><span>Top Emotion</span><strong id="topEmotion">–</strong></div><div class="bar"><span id="emotionBar"></span></div><div class="small" id="emotionNotes"></div></div>
-            <div class="metric"><div class="label"><span>Readability (Flesch)</span><strong id="flesch">–</strong></div><div class="bar"><span id="readabilityBar"></span></div><div class="small" id="readabilityNotes"></div></div>
+            <div class="metric"><div class="label"><span>Formality</span><strong id="formalityLabel">–</strong></div><div class="bar"><span id="formalityBar"></span></div><div class="small" id="formalityNotes" style="margin-top:6px"></div></div>
+            <div class="metric"><div class="label"><span>Overall Sentiment</span><strong id="sentimentLabel">–</strong></div><div class="bar"><span id="sentimentBar"></span></div><div class="small" id="sentimentNotes" style="margin-top:6px"></div></div>
+            <div class="metric"><div class="label"><span>Top Emotion</span><strong id="topEmotion">–</strong></div><div class="bar"><span id="emotionBar"></span></div><div class="small" id="emotionNotes" style="margin-top:6px"></div></div>
+            <div class="metric"><div class="label"><span>Readability (Flesch)</span><strong id="flesch">–</strong></div><div class="bar"><span id="readabilityBar"></span></div><div class="small" id="readabilityNotes" style="margin-top:6px"></div></div>
           </div>
         </div>
       </section>
     </div>
 
+    <!-- TABS -->
     <section class="card" style="margin-top:18px">
-      <div class="hdr"><h2>Details</h2></div>
+      <div class="tabbar"><button class="active" data-tab="fixes">Grammar Fixes</button><button data-tab="emotions">Emotion Detail</button><button data-tab="metrics">Metrics</button><button data-tab="original">Original vs Corrected</button></div>
       <div class="body">
-        <div class="tabbar row" style="border:0;padding:0 0 10px 0">
-          <button class="btn ghost" data-tab="fixes">Grammar Fixes</button>
-          <button class="btn ghost" data-tab="emotions">Emotion Detail</button>
-          <button class="btn ghost" data-tab="metrics">Metrics</button>
-          <button class="btn ghost" data-tab="original">Original vs Corrected</button>
-        </div>
-        <div id="fixes" class="tab" style="display:block">
-          <div class="row right" style="margin-bottom:10px"><button class="btn" id="copyFixed">Copy corrected</button></div>
-          <div class="split">
-            <div><h3 style="margin:6px 0">Corrected Text</h3><div id="fixedOut" class="outbox" style="white-space:pre-wrap"></div></div>
-            <div><h3 style="margin:6px 0">What changed</h3><ul id="fixList"></ul></div>
-          </div>
-        </div>
-        <div id="emotions" class="tab"><div id="emotionBars" class="summary"></div><div class="small">Multiple emotions can co‑exist.</div></div>
-        <div id="metrics" class="tab"><div class="summary">
-          <div class="metric"><div class="label"><span>Words</span><strong id="words">–</strong></div><div class="label"><span>Sentences</span><strong id="sentences">–</strong></div><div class="label"><span>Avg words/sentence</span><strong id="aws">–</strong></div><div class="label"><span>Avg word length</span><strong id="awl">–</strong></div></div>
-          <div class="metric"><div class="label"><span>Contractions</span><strong id="contractions">–</strong></div><div class="label"><span>Slang/Emoji</span><strong id="slang">–</strong></div><div class="label"><span>Excess punctuation</span><strong id="punx">–</strong></div><div class="label"><span>Semicolons/Colons</span><strong id="puncRich">–</strong></div></div>
-          <div class="metric"><div class="label"><span>F‑K Grade</span><strong id="fkgl">–</strong></div><div class="label"><span>Type–Token Ratio</span><strong id="ttr">–</strong></div><div class="label"><span>Passive voice (est.)</span><strong id="passive">–</strong></div><div class="label"><span>Reading time</span><strong id="readtime">–</strong></div></div>
-        </div></div>
-        <div id="original" class="tab"><div class="split"><div><h3 style="margin:6px 0">Original</h3><div id="origOut" class="outbox" style="white-space:pre-wrap"></div></div><div><h3 style="margin:6px 0">Corrected (highlighted)</h3><div id="diffOut" class="outbox" style="white-space:pre-wrap"></div></div></div></div>
+        <div id="fixes" class="tab active"><div class="row right" style="margin-bottom:10px"><button class="btn" id="copyFixed">Copy corrected</button></div><div class="split"><div><h3 style="margin:6px 0 6px">Corrected Text</h3><div id="fixedOut" class="outbox" style="white-space:pre-wrap"></div></div><div><h3 style="margin:6px 0 6px">What changed</h3><ul id="fixList" class="fix-list"></ul></div></div></div>
+        <div id="emotions" class="tab"><div id="emotionBars" class="summary"></div><div class="small" style="margin-top:8px">Multiple emotions can co‑exist.</div></div>
+        <div id="metrics" class="tab"><div class="summary"><div class="metric"><div class="label"><span>Words</span><strong id="words">–</strong></div><div class="label"><span>Sentences</span><strong id="sentences">–</strong></div><div class="label"><span>Avg words/sentence</span><strong id="aws">–</strong></div><div class="label"><span>Avg word length</span><strong id="awl">–</strong></div></div><div class="metric"><div class="label"><span>Contractions</span><strong id="contractions">–</strong></div><div class="label"><span>Slang/Emoji</span><strong id="slang">–</strong></div><div class="label"><span>Excess punctuation</span><strong id="punx">–</strong></div><div class="label"><span>Semicolons/Colons</span><strong id="puncRich">–</strong></div></div><div class="metric"><div class="label"><span>F‑K Grade</span><strong id="fkgl">–</strong></div><div class="label"><span>Type–Token Ratio</span><strong id="ttr">–</strong></div><div class="label"><span>Passive voice (est.)</span><strong id="passive">–</strong></div><div class="label"><span>Reading time</span><strong id="readtime">–</strong></div></div></div></div>
+        <div id="original" class="tab"><div class="split"><div><h3 style="margin:6px 0 6px">Original</h3><div id="origOut" class="outbox" style="white-space:pre-wrap"></div></div><div><h3 style="margin:6px 0 6px">Corrected (changes highlighted)</h3><div id="diffOut" class="outbox" style="white-space:pre-wrap"></div></div></div></div>
       </div>
     </section>
 
-    <div class="footer">Local AI powered by <span class="mono">@mlc-ai/web-llm</span>. If WebGPU isn't available, classic analysis still works.</div>
+    <div class="footer">Local AI uses <span class="mono">@mlc-ai/web-llm</span>. If the library isn't loaded or WebGPU is missing, the app automatically falls back to classic analysis.</div>
   </main>
 
-  <!-- Load WebLLM library BEFORE our code -->
+  <!-- Load WebLLM BEFORE our code. If this fails, the UI will show a clear status and fall back. -->
   <script src="https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.57/dist/web-llm.min.js"></script>
 
   <script>
-    // ——— Helpers
-    const $ = (s)=>document.querySelector(s);
-    const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-    const pct=(n)=>`${clamp(n,0,100).toFixed(0)}%`;
+    // ——— Utilities & small helpers
+    const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)); const pct=(n)=>`${clamp(n,0,100).toFixed(0)}%`;
     const safeSplitSentences=(t)=>t.replace(/([\.|\?|!])(\s+|$)/g,'$1|').split('|').map(s=>s.trim()).filter(Boolean);
+    const countSyllables=(w)=>{w=w.toLowerCase();if(w.length<=3)return 1;let syl=0;const v='aeiouy';let pv=false;for(const c of w){const iv=v.includes(c);if(iv&&!pv)syl++;pv=iv;}if(w.endsWith('e'))syl--;if(w.endsWith('le')&&!v.includes(w[w.length-3]||''))syl++;return Math.max(1,syl)};
     const tokenize=(t)=>t.toLowerCase().replace(/[^a-z0-9'\-\s]/g,' ').split(/\s+/).filter(Boolean);
-    const uniq=arr=>[...new Set(arr)];
-    const countSyllables=(w)=>{w=w.toLowerCase();if(w.length<=3) return 1;let syl=0;const v='aeiouy';let pv=false;for(const c of w){const iv=v.includes(c);if(iv&&!pv) syl++; pv=iv;} if(w.endsWith('e')) syl--; if(w.endsWith('le')&&!v.includes(w[w.length-3]||'')) syl++; return Math.max(1,syl)}
-    const toast=(m)=>{const el=document.createElement('div');el.textContent=m;el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#141d3a;color:#e8eeff;border:1px solid #ffffff22;padding:10px 14px;border-radius:10px;z-index:99;box-shadow:0 10px 25px rgba(0,0,0,.35)';document.body.appendChild(el);setTimeout(()=>el.remove(),1600)}
+    const uniq=(a)=>[...new Set(a)]; const $=(s)=>document.querySelector(s);
+    const toast=(m)=>{const el=document.createElement('div');el.textContent=m;el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#141d3a;color:#e8eeff;border:1px solid #ffffff22;padding:10px 14px;border-radius:10px;z-index:99;box-shadow:0 10px 25px rgba(0,0,0,.35)';document.body.appendChild(el);setTimeout(()=>el.remove(),1600)};
     const copyToClipboard=async(t)=>{try{await navigator.clipboard.writeText(t);toast('Copied corrected text');}catch{}}
 
-    // ——— Baseline analysis (local rules)
-    const CONTRACTIONS=["I'm","you're","he's","she's","it's","we're","they're","I've","you've","we've","they've","I'd","you'd","he'd","she'd","we'd","they'd","I'll","you'll","he'll","she'll","we'll","they'll","can't","don't","won't","isn't","aren't","wouldn't","couldn't","shouldn't","didn't","doesn't","haven't","hasn't","hadn't","ain't"];    
+    // ——— Lexicons
+    const CONTRACTIONS=["I'm","you're","he's","she's","it's","we're","they're","I've","you've","we've","they've","I'd","you'd","he'd","she'd","we'd","they'd","I'll","you'll","he'll","she'll","we'll","they'll","can't","don't","won't","isn't","aren't","wouldn't","couldn't","shouldn't","didn't","doesn't","haven't","hasn't","hadn't","ain't"];
     const SLANG=['gonna','wanna','gotta','kinda','sorta','ain\'t','lol','idk','tbh','btw','brb','imo','ngl','fr','lowkey','highkey','u','ur','tho'];
     const EMO_LEX={joy:['happy','joy','cheer','delight','glad','love','loved','smile','smiling','pleased','excited','wonderful','great','fantastic','amazing','awesome','proud','grateful','thrilled','relief','relieved','optimistic','hopeful'],sadness:['sad','upset','down','depressed','unhappy','heartbroken','mourn','cry','crying','tears','miserable','gloomy','sorrow','regret','lonely','pain','hurt','grief','devastated','disappointed'],anger:['angry','mad','furious','irritated','annoyed','rage','outraged','hate','hated','resent','fume','livid','offended','disgusted','enraged','frustrated'],fear:['afraid','scared','terrified','fear','fearful','anxious','anxiety','worried','panic','panicked','nervous','alarmed','concerned','uneasy','apprehensive'],surprise:['surprised','shocked','astonished','amazed','suddenly','unexpected','wow','whoa','unbelievable'],disgust:['disgust','gross','nasty','revolting','repulsed','abhorrent','loathsome','sickened','vile','foul']};
     const POSITIVE=['good','great','excellent','fantastic','love','like','enjoy','success','win','positive','benefit','improve','happy','proud','credible','clear','sound'];
     const NEGATIVE=['bad','poor','terrible','awful','hate','dislike','problem','fail','loss','negative','worse','worsen','sad','angry','unclear','weak'];
 
-    function applyBasicFixes(text){
-      const MISS=[{name:'Capitalize I',re:/\bi\b/g,to:'I',hint:'i → I'},{name:"I'm contraction",re:/\bim\b/gi,to:"I'm",hint:"im → I'm"},{name:"Don't contraction",re:/\bdont\b/gi,to:"don't",hint:"dont → don't"},{name:"Can't contraction",re:/\bcant\b/gi,to:"can't",hint:"cant → can't"},{name:"Won't contraction",re:/\bwont\b/gi,to:"won't",hint:"wont → won't"},{name:"It's vs its (article)",re:/\bits\s+(a|an|the)\b/gi,to:"it's $1",hint:"its → it's"},{name:"a/an before vowel",re:/\ba\s+([aeiou][a-z]+)/gi,to:"an $1",hint:"a → an"},{name:"an before consonant",re:/\ban\s+([bcdfghjklmnpqrstvwxyz][a-z]+)/gi,to:"a $1",hint:"an → a"},{name:"Alot → a lot",re:/\balot\b/gi,to:"a lot",hint:"alot → a lot"},{name:"Double spaces",re:/  +/g,to:" ",hint:"condense spaces"},{name:"Space after punctuation",re:/([.,;!?])(\S)/g,to:"$1 $2",hint:"add space after punctuation"},{name:"No space before punctuation",re:/\s+([.,!?;:])/g,to:"$1",hint:"remove space before punctuation"},{name:"Repeated punctuation",re:/([!?.,])\1{1,}/g,to:"$1",hint:"reduce repeats"}];
-      let fixed=text; const changes=[]; for(const r of MISS){ const before=fixed; fixed=fixed.replace(r.re,r.to); if(before!==fixed){ const c=(before.match(r.re)||[]).length; changes.push(`${r.name} (${c}) — ${r.hint}`);} }
-      const sentences=safeSplitSentences(fixed); const capped=sentences.map(s=>s.replace(/^[\s]*([a-z])/,(_,p)=>p.toUpperCase())); const j=capped.join(' '); if(j!==fixed) changes.push('Capitalize sentence starts');
-      return {fixed:j,changes};
-    }
-
-    function analyze(text){
-      const tokens=tokenize(text); const words=tokens.length; const sentences=Math.max(1,safeSplitSentences(text).length); const aws=words/sentences; const awl=tokens.reduce((a,w)=>a+w.length,0)/Math.max(1,words); const unique=uniq(tokens).length; const ttr=unique/Math.max(1,words); const sylls=tokens.reduce((a,w)=>a+countSyllables(w),0); const flesch=206.835-1.015*(words/sentences)-84.6*(sylls/Math.max(1,words)); const fkgl=0.39*(words/sentences)+11.8*(sylls/Math.max(1,words))-15.59; const pos=tokens.filter(t=>POSITIVE.includes(t)).length; const neg=tokens.filter(t=>NEGATIVE.includes(t)).length; const sentimentScore=clamp((pos-neg)*12+50,0,100); const emoCounts={joy:0,sadness:0,anger:0,fear:0,surprise:0,disgust:0}; for(const [k,list] of Object.entries(EMO_LEX)){ for(const w of tokens){ if(list.includes(w)) emoCounts[k]++; }} const emoTotal=Object.values(emoCounts).reduce((a,b)=>a+b,0)||1; const emoPct=Object.fromEntries(Object.entries(emoCounts).map(([k,v])=>[k,(v/emoTotal)*100])); const topEmotion=Object.entries(emoPct).sort((a,b)=>b[1]-a[1])[0]; const contractionCount=CONTRACTIONS.reduce((acc,c)=>acc+(tokenize(text).join(' ').match(new RegExp(`\\b${c.toLowerCase().replace("'","[\\'’]")}\\b`,'g'))||[]).length,0); const slangCount=SLANG.reduce((acc,s)=>acc+(text.toLowerCase().match(new RegExp(`\\b${s.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&')}\\b`,'g'))||[]).length,0); const emojiCount=(text.match(/[\p{Emoji_Presentation}\p{Emoji}\u200d]/gu)||[]).length; const exclamations=(text.match(/!{1,}/g)||[]).length; const allcapsWords=(text.match(/\b[A-Z]{3,}\b/g)||[]).length; const semicolons=(text.match(/;/g)||[]).length; const colons=(text.match(/:/g)||[]).length; const passive=(text.match(/\b(am|is|are|was|were|be|been|being)\s+\w+(ed|en)\b/gi)||[]).length; let formality=50; formality+=clamp((awl-4)*8,-20,20); formality+=clamp((aws-12)*2,-20,20); formality+=Math.min(semicolons*4+colons*2,14); formality-=Math.min(contractionCount*2,18); formality-=Math.min((slangCount+emojiCount)*6,24); formality-=Math.min(exclamations*2+allcapsWords*1.5,18); formality=clamp(formality,0,100); const readMins=Math.max(1,Math.round(words/200)); return {words,sentences,aws,awl,unique,ttr,sylls,flesch,fkgl,pos,neg,sentimentScore,emoCounts,emoPct,topEmotion,contractionCount,slangCount,emojiCount,exclamations,allcapsWords,semicolons,colons,passive,formality,readMins}; }
-
-    function highlightDiff(orig,fixed){ const o=orig.split(/(\s+)/), f=fixed.split(/(\s+)/); const dp=Array(o.length+1).fill(null).map(()=>Array(f.length+1).fill(0)); for(let i=1;i<=o.length;i++){ for(let j=1;j<=f.length;j++){ dp[i][j]=(o[i-1]===f[j-1])?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]); }} const out=[]; let i=o.length,j=f.length; while(i>0&&j>0){ if(o[i-1]===f[j-1]){out.unshift(o[i-1]);i--;j--;} else if(dp[i-1][j]>=dp[i][j-1]){out.unshift(`<mark>${escapeHtml(o[i-1])}</mark>`);i--;} else {out.unshift(`<mark>${escapeHtml(f[j-1])}</mark>`);j--;}} while(i>0){out.unshift(`<mark>${escapeHtml(o[i-1])}</mark>`);i--;} while(j>0){out.unshift(`<mark>${escapeHtml(f[j-1])}</mark>`);j--;} return out.join(''); }
+    // ——— Baseline grammar fixer
+    const MISSPELLINGS=[{name:'Capitalize I',re:/\bi\b/g,to:'I',hint:"‘i’ ➜ ‘I’"},{name:"I'm contraction",re:/\bim\b/gi,to:"I'm",hint:"‘im’ ➜ ‘I'm’"},{name:"Don't contraction",re:/\bdont\b/gi,to:"don't",hint:"‘dont’ ➜ ‘don't’"},{name:"Can't contraction",re:/\bcant\b/gi,to:"can't",hint:"‘cant’ ➜ ‘can't’"},{name:"Won't contraction",re:/\bwont\b/gi,to:"won't",hint:"‘wont’ ➜ ‘won't’"},{name:"It's vs its (article)",re:/\bits\s+(a|an|the)\b/gi,to:"it's $1",hint:"Possessive ‘its’ used as ‘it is’"},{name:"a/an before vowel",re:/\ba\s+([aeiou][a-z]+)/gi,to:"an $1",hint:"‘a’ ➜ ‘an’"},{name:"an before consonant",re:/\ban\s+([bcdfghjklmnpqrstvwxyz][a-z]+)/gi,to:"a $1",hint:"‘an’ ➜ ‘a’"},{name:"Alot ➜ a lot",re:/\balot\b/gi,to:"a lot",hint:"‘alot’ ➜ ‘a lot’"},{name:"Double spaces",re:/  +/g,to:" ",hint:"Condense spaces"},{name:"Space after punctuation",re:/([.,;!?])(\S)/g,to:"$1 $2",hint:"Add space"},{name:"No space before punctuation",re:/\s+([.,!?;:])/g,to:"$1",hint:"Remove space"},{name:"Repeated punctuation",re:/([!?.,])\1{1,}/g,to:"$1",hint:"Reduce repeats"}];
+    function applyBasicFixes(text){let fixed=text;const changes=[];for(const r of MISSPELLINGS){const before=fixed;fixed=fixed.replace(r.re,r.to);if(before!==fixed){const c=(before.match(r.re)||[]).length;changes.push(`${r.name} (${c}) — ${r.hint}`)}}const sentences=safeSplitSentences(fixed);const capped=sentences.map(s=>s.replace(/^[\s]*([a-z])/,(_,p)=>p.toUpperCase()));const j=capped.join(' ');if(j!==fixed)changes.push('Capitalize sentence starts');return{fixed:j,changes}};
+    function highlightDiff(orig,fixed){const o=orig.split(/(\s+)/),f=fixed.split(/(\s+)/);const dp=Array(o.length+1).fill(null).map(()=>Array(f.length+1).fill(0));for(let i=1;i<=o.length;i++){for(let j=1;j<=f.length;j++){dp[i][j]=(o[i-1]===f[j-1])?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1])}}const out=[];let i=o.length,j=f.length;while(i>0&&j>0){if(o[i-1]===f[j-1]){out.unshift(o[i-1]);i--;j--}else if(dp[i-1][j]>=dp[i][j-1]){out.unshift(`<mark>${escapeHtml(o[i-1])}</mark>`);i--}else{out.unshift(`<mark>${escapeHtml(f[j-1])}</mark>`);j--}}while(i>0){out.unshift(`<mark>${escapeHtml(o[i-1])}</mark>`);i--}while(j>0){out.unshift(`<mark>${escapeHtml(f[j-1])}</mark>`);j--}return out.join('')}
     const escapeHtml=(s)=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 
-    // ——— UI binding
-    const setBar=(sel,val)=>{ const el=$(sel); if(el) el.style.width=pct(val); };
-    function labelFormality(n){ if(n>=80) return 'Highly formal'; if(n>=60) return 'Moderately formal'; if(n>=40) return 'Neutral / mixed'; if(n>=20) return 'Informal'; return 'Very informal'; }
-    function labelSentiment(n){ if(n>66) return `Positive (${n.toFixed(0)}/100)`; if(n<34) return `Negative (${n.toFixed(0)}/100)`; return `Neutral (${n.toFixed(0)}/100)`; }
-    function describeFlesch(f){ if(f>=90) return 'Very easy'; if(f>=70) return 'Easy'; if(f>=60) return 'Plain English'; if(f>=50) return 'Fairly difficult'; if(f>=30) return 'Difficult'; return 'Very difficult'; }
+    // ——— Analysis (classical + heuristics)
+    function analyze(text){const tokens=tokenize(text);const words=tokens.length;const sentences=Math.max(1,safeSplitSentences(text).length);const aws=words/sentences;const awl=tokens.reduce((a,w)=>a+w.length,0)/Math.max(1,words);const unique=uniq(tokens).length;const ttr=unique/Math.max(1,words);const sylls=tokens.reduce((a,w)=>a+countSyllables(w),0);const flesch=206.835-1.015*(words/sentences)-84.6*(sylls/Math.max(1,words));const fkgl=0.39*(words/sentences)+11.8*(sylls/Math.max(1,words))-15.59;const pos=tokens.filter(t=>POSITIVE.includes(t)).length;const neg=tokens.filter(t=>NEGATIVE.includes(t)).length;const sentimentScore=clamp((pos-neg)*12+50,0,100);const EMO_ORDER=['joy','sadness','anger','fear','surprise','disgust'];const emoCounts={};EMO_ORDER.forEach(k=>emoCounts[k]=0);for(const [emo,list]of Object.entries(EMO_LEX)){for(const w of tokens){if(list.includes(w))emoCounts[emo]++}}const emoTotal=Object.values(emoCounts).reduce((a,b)=>a+b,0)||1;const emoPct=Object.fromEntries(Object.entries(emoCounts).map(([k,v])=>[k,(v/emoTotal)*100]));const topEmotion=Object.entries(emoPct).sort((a,b)=>b[1]-a[1])[0];const contractionCount=CONTRACTIONS.reduce((acc,c)=>acc+(tokenize(text).join(' ').match(new RegExp(`\\b${c.toLowerCase().replace("'","[\\'’]")}\\b`,'g'))||[]).length,0);const slangCount=SLANG.reduce((acc,s)=>acc+(text.toLowerCase().match(new RegExp(`\\b${s.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&')}\\b`,'g'))||[]).length,0);const emojiCount=(text.match(/[\p{Emoji_Presentation}\p{Emoji}\u200d]/gu)||[]).length;const exclamations=(text.match(/!{1,}/g)||[]).length;const allcapsWords=(text.match(/\b[A-Z]{3,}\b/g)||[]).length;const semicolons=(text.match(/;/g)||[]).length;const colons=(text.match(/:/g)||[]).length;const passive=(text.match(/\b(am|is|are|was|were|be|been|being)\s+\w+(ed|en)\b/gi)||[]).length;let formality=50;formality+=clamp((awl-4)*8,-20,20);formality+=clamp((aws-12)*2,-20,20);formality+=Math.min(semicolons*4+colons*2,14);formality-=Math.min(contractionCount*2,18);formality-=Math.min((slangCount+emojiCount)*6,24);formality-=Math.min(exclamations*2+allcapsWords*1.5,18);formality=clamp(formality,0,100);const readMins=Math.max(1,Math.round(words/200));return{words,sentences,aws,awl,unique,ttr,sylls,flesch,fkgl,pos,neg,sentimentScore,emoPct,topEmotion,contractionCount,slangCount,emojiCount,exclamations,allcapsWords,semicolons,colons,passive,formality,readMins}}
 
-    function renderFlags(a){ const flags=[]; if(a.contractionCount>0) flags.push(`${a.contractionCount} contractions`); if(a.slangCount>0||a.emojiCount>0) flags.push(`${a.slangCount} slang • ${a.emojiCount} emoji`); if(a.exclamations>1) flags.push(`${a.exclamations} exclamations`); if(a.allcapsWords>0) flags.push(`${a.allcapsWords} ALL‑CAPS`); if(a.semicolons+a.colons>0) flags.push(`${a.semicolons} ; • ${a.colons} :`); if(a.passive>0) flags.push(`${a.passive} passive`); $('#flags').innerHTML=flags.map(f=>`<span class="chip">${f}</span>`).join(''); }
+    // ——— UI wiring
+    const setBar=(sel,val)=>{const el=$(sel);if(el)el.style.width=pct(val)};
+    function labelFormality(n){if(n>=80)return'Highly formal (academic/professional)';if(n>=60)return'Moderately formal (business casual)';if(n>=40)return'Neutral / mixed';if(n>=20)return'Informal (conversational)';return'Very informal (chatty/slangy)'}
+    function labelSentiment(n){if(n>66)return`Positive (${n.toFixed(0)}/100)`;if(n<34)return`Negative (${n.toFixed(0)}/100)`;return`Neutral (${n.toFixed(0)}/100)`}
+    function describeFlesch(f){if(f>=90)return'Very easy';if(f>=70)return'Easy';if(f>=60)return'Plain English';if(f>=50)return'Fairly difficult';if(f>=30)return'Difficult';return'Very difficult'}
+    function renderFlags(a){const flags=[];if(a.contractionCount>0)flags.push(`${a.contractionCount} contractions`);if(a.slangCount>0||a.emojiCount>0)flags.push(`${a.slangCount} slang • ${a.emojiCount} emoji`);if(a.exclamations>1)flags.push(`${a.exclamations} exclamations`);if(a.allcapsWords>0)flags.push(`${a.allcapsWords} ALL‑CAPS`);if(a.semicolons+a.colons>0)flags.push(`${a.semicolons} ; • ${a.colons} :`);if(a.passive>0)flags.push(`${a.passive} passive`);$('#flags').innerHTML=flags.map(f=>`<span class="chip">${f}</span>`).join('')}
+    function renderSummary(a){$('#formalityLabel').textContent=`${a.formality.toFixed(0)}/100`;setBar('#formalityBar',a.formality);$('#formalityNotes').textContent=labelFormality(a.formality);$('#sentimentLabel').textContent=labelSentiment(a.sentimentScore);setBar('#sentimentBar',a.sentimentScore);$('#sentimentNotes').textContent=`Pos ${a.pos} • Neg ${a.neg}`;const top=a.topEmotion||['n/a',0];$('#topEmotion').textContent=`${top[0]} (${(top[1]||0).toFixed(0)}%)`;setBar('#emotionBar',top[1]||0);$('#emotionNotes').textContent='Multiple emotions may appear together.';$('#flesch').textContent=a.flesch.toFixed(1);setBar('#readabilityBar',clamp((a.flesch+20),0,100));$('#readabilityNotes').textContent=describeFlesch(a.flesch);renderFlags(a)}
+    function renderEmotionBars(emo){const order=['joy','sadness','anger','fear','surprise','disgust'];$('#emotionBars').innerHTML=order.map(k=>{const v=emo[k]||0;return`<div class=\"metric\"><div class=\"label\"><span>${k[0].toUpperCase()+k.slice(1)}</span><strong>${v.toFixed(0)}%</strong></div><div class=\"bar\"><span style=\"width:${pct(v)}\"></span></div></div>`}).join('')}
+    function renderMetrics(a){$('#words').textContent=a.words;$('#sentences').textContent=a.sentences;$('#aws').textContent=a.aws.toFixed(1);$('#awl').textContent=a.awl.toFixed(2);$('#contractions').textContent=a.contractionCount;$('#slang').textContent=`${a.slangCount} slang • ${a.emojiCount} emoji`;$('#punx').textContent=`${a.exclamations} ! • ${a.allcapsWords} ALL‑CAPS`;$('#puncRich').textContent=`${a.semicolons} ; • ${a.colons} :`;$('#fkgl').textContent=a.fkgl.toFixed(1);$('#ttr').textContent=a.ttr.toFixed(2);$('#passive').textContent=a.passive;$('#readtime').textContent=`${a.readMins} min`}
 
-    function renderSummary(a){ $('#formalityLabel').textContent=`${a.formality.toFixed(0)}/100`; setBar('#formalityBar',a.formality); $('#formalityNotes').textContent=labelFormality(a.formality); $('#sentimentLabel').textContent=labelSentiment(a.sentimentScore); setBar('#sentimentBar',a.sentimentScore); $('#sentimentNotes').textContent=`Pos ${a.pos} • Neg ${a.neg}`; const [emo,val]=a.topEmotion||['n/a',0]; $('#topEmotion').textContent=`${emo} (${val.toFixed(0)}%)`; setBar('#emotionBar',val); $('#emotionNotes').textContent='Multiple emotions may appear together.'; $('#flesch').textContent=a.flesch.toFixed(1); setBar('#readabilityBar',clamp((a.flesch+20),0,100)); $('#readabilityNotes').textContent=describeFlesch(a.flesch); renderFlags(a); }
-
-    function renderEmotionBars(emo){ const order=['joy','sadness','anger','fear','surprise','disgust']; $('#emotionBars').innerHTML=order.map(k=>{const v=emo[k]||0; return `<div class="metric"><div class="label"><span>${k[0].toUpperCase()+k.slice(1)}</span><strong>${v.toFixed(0)}%</strong></div><div class="bar"><span style="width:${pct(v)}"></span></div></div>`}).join(''); }
-    function renderMetrics(a){ $('#words').textContent=a.words; $('#sentences').textContent=a.sentences; $('#aws').textContent=a.aws.toFixed(1); $('#awl').textContent=a.awl.toFixed(2); $('#contractions').textContent=a.contractionCount; $('#slang').textContent=`${a.slangCount} slang • ${a.emojiCount} emoji`; $('#punx').textContent=`${a.exclamations} ! • ${a.allcapsWords} ALL‑CAPS`; $('#puncRich').textContent=`${a.semicolons} ; • ${a.colons} :`; $('#fkgl').textContent=a.fkgl.toFixed(1); $('#ttr').textContent=a.ttr.toFixed(2); $('#passive').textContent=a.passive; $('#readtime').textContent=`${a.readMins} min`; }
-
-    // ——— Local AI (WebLLM) with visible loader
-    const LocalAI={ engine:null, modelId:null, enabled:false };
-    const loader={root:$('#loader'), mname:$('#mname'), pbar:$('#pbar'), status:$('#status'), gpu:$('#gpuStat')};
-
-    function showLoader(show){ loader.root.classList.toggle('active', !!show); }
-    function setProgress(p){ loader.pbar.style.width=pct(p*100); }
-    function setStatus(text, cls){ loader.status.textContent=text; loader.status.className='small '+(cls||''); }
+    // ——— Local AI (guarded)
+    const LocalAI={engine:null,enabled:false,modelId:null};
+    const loader={root:$('#loader'),mname:$('#mname'),pbar:$('#pbar'),status:$('#status'),gpu:$('#gpuStat')};
+    const hasWebLLM=()=>typeof window!=='undefined' && typeof window.webllm!=='undefined';
+    function showLoader(on){loader.root.classList.toggle('active',!!on)}
+    function setProgress(p){loader.pbar.style.width=pct(p*100)}
+    function setStatus(t,cls){loader.status.textContent=t;loader.status.className='small '+(cls||'')}
 
     async function ensureEngine(){
       if(!LocalAI.enabled) throw new Error('Local AI disabled');
-      const modelSel=$('#model'); LocalAI.modelId=modelSel.value; loader.mname.textContent=LocalAI.modelId; showLoader(true);
-      if(!('gpu' in navigator)){ loader.gpu.textContent='WebGPU: not available'; loader.gpu.className='small status-bad'; throw new Error('WebGPU not supported in this browser'); }
+      LocalAI.modelId=$('#model').value; loader.mname.textContent=LocalAI.modelId; showLoader(true);
+      if(!('gpu' in navigator)){ loader.gpu.textContent='WebGPU: not available'; loader.gpu.className='small status-bad'; throw new Error('WebGPU not supported'); }
       loader.gpu.textContent='WebGPU: available'; loader.gpu.className='small status-ok';
-      if(LocalAI.engine && LocalAI.engine.getModelId && LocalAI.engine.getModelId()===LocalAI.modelId){ setStatus('Model already loaded.', 'status-ok'); setProgress(1); return LocalAI.engine; }
-      setStatus('Loading model… first load may take a while.',''); setProgress(0.02);
-      const option={ model: LocalAI.modelId, initProgressCallback: (info)=>{ if(info?.progress!=null){ setProgress(info.progress); } if(info?.text){ setStatus(info.text); } } };
-      LocalAI.engine = await webllm.CreateWebWorkerMLCEngine(option);
-      setStatus('Model ready.', 'status-ok'); setProgress(1); return LocalAI.engine;
+      if(!hasWebLLM()){ setStatus('WebLLM library not loaded. CDN blocked or script tag missing.','status-bad'); throw new Error('webllm not defined'); }
+      if(LocalAI.engine && LocalAI.engine.getModelId && LocalAI.engine.getModelId()===LocalAI.modelId){ setStatus('Model already loaded.','status-ok'); setProgress(1); return LocalAI.engine; }
+      setStatus('Loading model…',''); setProgress(0.02);
+      const option={ model: LocalAI.modelId, initProgressCallback:(info)=>{ if(info?.progress!=null) setProgress(info.progress); if(info?.text) setStatus(info.text); } };
+      LocalAI.engine=await webllm.CreateWebWorkerMLCEngine(option);
+      setStatus('Model ready.','status-ok'); setProgress(1); return LocalAI.engine;
     }
 
-    const SYS_PROMPT = 'Return strict JSON with keys: formality (0-100), sentiment_label, sentiment_score (0-100), emotions {joy,sadness,anger,fear,surprise,disgust (0-100)}, corrected_text, fixes[]. No extra text.';
-    const buildUserPrompt=(t)=>`Text:\n"""${t}"""\nTasks: score formality/sentiment/emotions; fix grammar/spelling/punctuation while preserving meaning; list key fixes.`;
-    const tryParse=(s)=>{ try{return JSON.parse(s);}catch{ const m=s.match(/\{[\s\S]*\}/); if(m){try{return JSON.parse(m[0]);}catch{}} return null; } };
+    const SYS='Return strict JSON with keys: formality (0-100), sentiment_label, sentiment_score (0-100), emotions {joy,sadness,anger,fear,surprise,disgust (0-100)}, corrected_text, fixes[]. No extra text.';
+    const mkUser=(t)=>`Text:\n"""${t}"""\nTasks: score formality/sentiment/emotions; fix grammar/spelling/punctuation; list key fixes.`;
+    const tryParse=(s)=>{try{return JSON.parse(s)}catch{const m=s.match(/\{[\s\S]*\}/);if(m){try{return JSON.parse(m[0])}catch{}}return null};
 
-    async function llmAnalyze(text){
-      const engine=await ensureEngine();
-      setStatus('Analyzing locally…');
-      let out='';
-      for await (const chunk of engine.chat.completions.create({ messages:[{role:'system',content:SYS_PROMPT},{role:'user',content:buildUserPrompt(text)}], stream:true, temperature:0.1 })){
-        out += chunk.choices?.[0]?.delta?.content || '';
-      }
-      setStatus('Done.','status-ok');
-      return tryParse(out) || { corrected_text:text, fixes:["(fallback) couldn't parse JSON"], sentiment_label:'neutral', sentiment_score:50, emotions:{joy:0,sadness:0,anger:0,fear:0,surprise:0,disgust:0}, formality:50 };
-    }
+    async function llmAnalyze(text){ const engine=await ensureEngine(); setStatus('Analyzing locally…'); let out=''; for await (const ch of engine.chat.completions.create({messages:[{role:'system',content:SYS},{role:'user',content:mkUser(text)}],stream:true,temperature:0.1})){ out+=ch.choices?.[0]?.delta?.content||'' } setStatus('Done.','status-ok'); return tryParse(out)||{corrected_text:text,fixes:["(fallback) couldn't parse JSON"],sentiment_label:'neutral',sentiment_score:50,emotions:{joy:0,sadness:0,anger:0,fear:0,surprise:0,disgust:0},formality:50}; }
 
-    async function run(){
-      const text=$('#input').value||''; if(!text.trim()){ toast('Please enter some text'); return; }
-      const base=analyze(text); renderSummary(base); renderEmotionBars(base.emoPct); renderMetrics(base);
+    // ——— Run pipelines
+    function runBaseline(){ const text=$('#input').value||''; if(!text.trim()){toast('Enter text');return} const a=analyze(text); renderSummary(a); renderEmotionBars(a.emoPct||{}); renderMetrics(a); const {fixed,changes}=applyBasicFixes(text); $('#fixedOut').textContent=fixed; $('#origOut').textContent=text; $('#diffOut').innerHTML=highlightDiff(text,fixed); $('#fixList').innerHTML=(changes.length?changes:['No basic fixes applied.']).map(c=>`<li>${c}</li>`).join(''); }
 
-      let fixed=text, fixes=['No basic fixes applied.'];
-      if(LocalAI.enabled){
-        try{
-          const llm=await llmAnalyze(text);
-          fixed=(llm.corrected_text||text).trim();
-          fixes=Array.isArray(llm.fixes)&&llm.fixes.length? llm.fixes : ['Applied general corrections.'];
-          base.formality=Math.round((base.formality*0.6)+((llm.formality||50)*0.4));
-          base.sentimentScore=llm.sentiment_score ?? base.sentimentScore; renderSummary(base);
-          renderEmotionBars(llm.emotions||base.emoPct);
-        }catch(err){ setStatus(`Local AI failed: ${err.message}`,'status-bad'); }
-      } else {
-        const res=applyBasicFixes(text); fixed=res.fixed; fixes=res.changes.length?res.changes:fixes;
-      }
+    async function runLocal(){ const text=$('#input').value||''; if(!text.trim()){toast('Enter text');return} const base=analyze(text); renderSummary(base); renderEmotionBars(base.emoPct||{}); renderMetrics(base); try{ const llm=await llmAnalyze(text); const fixed=(llm.corrected_text||text).trim(); const fixes=Array.isArray(llm.fixes)&&llm.fixes.length?llm.fixes:['Applied general corrections.']; base.formality=Math.round((base.formality*0.6)+((llm.formality||50)*0.4)); base.sentimentScore=llm.sentiment_score??base.sentimentScore; renderSummary(base); renderEmotionBars(llm.emotions||{}); $('#fixedOut').textContent=fixed; $('#origOut').textContent=text; $('#diffOut').innerHTML=highlightDiff(text,fixed); $('#fixList').innerHTML=fixes.map(s=>`<li>${s}</li>`).join(''); }catch(err){ setStatus(`Local AI failed: ${err.message}`,'status-bad'); /* graceful fallback */ runBaseline(); }}
 
-      $('#fixedOut').textContent=fixed; $('#origOut').textContent=text; $('#diffOut').innerHTML=highlightDiff(text,fixed);
-      $('#fixList').innerHTML=fixes.map(s=>`<li>${escapeHtml(s)}</li>`).join('');
-    }
-
-    // ——— Tabs & Controls
-    document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('.tab').forEach(t=>t.style.display='none'); document.getElementById(b.dataset.tab).style.display='block'; }));
+    // ——— Events
+    document.querySelectorAll('.tabbar button').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.getElementById(btn.dataset.tab).classList.add('active')})})
     $('#copyFixed').addEventListener('click',()=>copyToClipboard($('#fixedOut').textContent||''));
-    $('#clear').addEventListener('click',()=>{ $('#input').value=''; ['fixedOut','origOut','diffOut','fixList'].forEach(id=>{$('#'+id).innerHTML='';}); $('#flags').innerHTML=''; document.querySelectorAll('.bar>span').forEach(s=>s.style.width='0%'); ['formalityLabel','sentimentLabel','topEmotion','flesch','status'].forEach(id=>$('#'+id).textContent='–'); setProgress(0); setStatus('Idle.'); });
-    $('#sample').addEventListener('click',()=>{ $('#input').value="hey! i was kinda nervous about the meeting tmrw, but i'm also excited :) the plan is clear i think, but its a big change and ppl might be mad. we gotta move fast!!"; run(); });
-    $('#analyze').addEventListener('click',run);
-    document.addEventListener('keydown',(e)=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); run(); } if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='b'){ e.preventDefault(); copyToClipboard($('#fixedOut').textContent||''); }});
-    $('#useLocal').addEventListener('change',async (e)=>{ LocalAI.enabled=e.target.checked; showLoader(LocalAI.enabled); if(LocalAI.enabled){ try{ await ensureEngine(); }catch(err){ setStatus(err.message,'status-bad'); } }});
+    $('#clear').addEventListener('click',()=>{ $('#input').value=''; ['fixedOut','origOut','diffOut','fixList'].forEach(id=>$('#'+id).innerHTML=''); $('#flags').innerHTML=''; document.querySelectorAll('.bar>span').forEach(s=>s.style.width='0%'); ['formalityLabel','sentimentLabel','topEmotion','flesch','status'].forEach(id=>$('#'+id).textContent='–'); setProgress(0); showLoader(LocalAI.enabled); });
+    $('#sample').addEventListener('click',()=>{ $('#input').value="hey! i was kinda nervous about the meeting tmrw, but i'm also excited :) the plan is clear i think, but its a big change and ppl might be mad. we gotta move fast!!"; (LocalAI.enabled?runLocal:runBaseline)(); });
+    $('#analyze').addEventListener('click',()=> (LocalAI.enabled?runLocal():runBaseline()));
+    document.addEventListener('keydown',(e)=>{ if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); (LocalAI.enabled?runLocal:runBaseline)(); } if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='b'){ e.preventDefault(); copyToClipboard($('#fixedOut').textContent||''); }});
+    $('#useLocal').addEventListener('change',async(e)=>{ LocalAI.enabled=e.target.checked; showLoader(LocalAI.enabled); if(LocalAI.enabled){ try{ await ensureEngine(); }catch(err){ setStatus(`Local AI failed: ${err.message}`,'status-bad'); } }});
   </script>
 </body>
 </html>
