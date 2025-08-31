@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Text Insight — Formality • Emotion • Grammar Fix</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a33;
+      --muted: #8ea0c0;
+      --text: #e8eeff;
+      --accent: #7aa2ff;
+      --accent-2:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --card: #0f1530;
+      --chip:#1b2547;
+      --shadow: 0 10px 25px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box }
+    html, body { height: 100% }
+    body {
+      margin: 0; background: radial-gradient(1200px 800px at 20% -10%, #1f2a55 0%, transparent 60%),
+                                   radial-gradient(1000px 600px at 120% 20%, #1a2a4f 0%, transparent 60%), var(--bg);
+      color: var(--text); font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+    }
+    header { position: sticky; top: 0; z-index: 9; backdrop-filter: saturate(140%) blur(10px); background: #0b1020cc; border-bottom: 1px solid #ffffff14 }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 20px }
+    h1 { font-size: clamp(22px, 3vw, 30px); margin: 6px 0 2px; letter-spacing: .2px }
+    .sub { color: var(--muted); font-size: 14px }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 16px }
+    @media (max-width: 980px) { .grid { grid-template-columns: 1fr } }
+
+    .card { background: linear-gradient(180deg, #141d3a 0%, #0f1631 100%); border: 1px solid #ffffff1a; border-radius: var(--radius); box-shadow: var(--shadow) }
+    .card h2 { font-size: 16px; font-weight: 700; letter-spacing: .3px; margin: 0 0 10px }
+    .card .hdr { display:flex; align-items:center; justify-content:space-between; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #ffffff12 }
+    .card .body { padding: 14px 16px }
+
+    textarea#input {
+      width: 100%; min-height: 300px; resize: vertical; color: var(--text); background: #0a0f23; border: 1px solid #ffffff1a; border-radius: 12px; padding: 14px; outline: none; box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .2s ease, border-color .2s ease
+    }
+    textarea#input:focus { border-color: #7aa2ff66; box-shadow: 0 0 0 6px #7aa2ff18 }
+
+    .row { display:flex; flex-wrap: wrap; gap: 10px; align-items:center }
+    .row.right { justify-content: flex-end }
+    .btn { appearance: none; border: 0; border-radius: 999px; padding: 10px 14px; font-weight: 600; cursor: pointer; color: #0b1020; background: linear-gradient(180deg, #a8c2ff, #6c94ff); box-shadow: var(--shadow); transition: transform .05s ease }
+    .btn:hover { transform: translateY(-1px) }
+    .btn.secondary { background: #24325f; color: #c7d6ff; border: 1px solid #3c4a7d }
+    .btn.ghost { background: transparent; color: var(--muted); border: 1px solid #ffffff18 }
+
+    .summary { display:grid; grid-template-columns: 1fr 1fr; gap: 12px }
+    @media (max-width: 720px) { .summary { grid-template-columns: 1fr } }
+
+    .metric { background: var(--card); border: 1px solid #ffffff15; border-radius: 12px; padding: 12px }
+    .metric .label { display:flex; align-items:center; justify-content:space-between; font-size: 13px; color: var(--muted) }
+    .bar { position: relative; height: 10px; margin-top: 8px; background: #1b2547; border-radius: 999px; overflow: hidden; border:1px solid #ffffff10 }
+    .bar > span { position:absolute; inset:0 0 0 0; width: 0%; background: linear-gradient(90deg, #6c94ff, #4fd1c5); transition: width .5s ease }
+
+    .chips { display:flex; gap:8px; flex-wrap: wrap }
+    .chip { background: var(--chip); color: #cfe1ff; padding: 4px 10px; border: 1px solid #ffffff1a; border-radius: 999px; font-size: 12px }
+
+    .tabbar { display:flex; gap: 8px; border-bottom: 1px solid #ffffff12; padding: 0 16px }
+    .tabbar button { background: transparent; color: #baceff; border:0; padding:12px 8px; font-weight:600; cursor:pointer; position:relative }
+    .tabbar button.active::after { content:""; position:absolute; left:10px; right:10px; bottom:-1px; height:2px; background: linear-gradient(90deg, #6c94ff, #4fd1c5); border-radius:2px }
+
+    .tab { display:none }
+    .tab.active { display:block }
+
+    pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace }
+    .fix-list li { margin: 6px 0 }
+
+    .outbox { background: #0a0f23; border: 1px solid #ffffff1a; border-radius: 12px; padding: 12px }
+    .split { display:grid; grid-template-columns: 1fr 1fr; gap: 12px }
+    @media (max-width: 980px) { .split { grid-template-columns: 1fr } }
+
+    mark { background: #fde68a; color: #0b1020; padding: 0 2px; border-radius: 3px }
+    .small { color: var(--muted); font-size: 12px }
+
+    .footer { text-align:center; color: var(--muted); font-size: 12px; padding: 24px 0 40px }
+    .kbd { border:1px solid #ffffff30; background:#0a0f23; padding:2px 6px; border-radius:6px; font-family: ui-monospace, monospace; font-size: 12px }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Text Insight</h1>
+      <div class="sub">Analyze formality, detect emotion, and auto‑fix common grammar issues — instantly, in your browser.</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+      <!-- INPUT -->
+      <section class="card">
+        <div class="hdr">
+          <h2>Paste or type your text</h2>
+          <div class="row">
+            <button class="btn ghost" id="sample">Insert sample</button>
+            <button class="btn secondary" id="clear">Clear</button>
+            <button class="btn" id="analyze">Analyze ⏵</button>
+          </div>
+        </div>
+        <div class="body">
+          <textarea id="input" spellcheck="true" placeholder="Write or paste text here…"></textarea>
+          <div class="small" style="margin-top:8px">Tip: <span class="kbd">Ctrl/Cmd + Enter</span> runs analysis • <span class="kbd">Ctrl/Cmd + B</span> copies the corrected text.</div>
+        </div>
+      </section>
+
+      <!-- OUTPUT SUMMARY -->
+      <section class="card">
+        <div class="hdr">
+          <h2>Summary</h2>
+          <div class="chips" id="flags"></div>
+        </div>
+        <div class="body">
+          <div class="summary">
+            <div class="metric">
+              <div class="label"><span>Formality</span><strong id="formalityLabel">–</strong></div>
+              <div class="bar"><span id="formalityBar"></span></div>
+              <div class="small" id="formalityNotes" style="margin-top:6px"></div>
+            </div>
+            <div class="metric">
+              <div class="label"><span>Overall Sentiment</span><strong id="sentimentLabel">–</strong></div>
+              <div class="bar"><span id="sentimentBar"></span></div>
+              <div class="small" id="sentimentNotes" style="margin-top:6px"></div>
+            </div>
+            <div class="metric">
+              <div class="label"><span>Top Emotion</span><strong id="topEmotion">–</strong></div>
+              <div class="bar"><span id="emotionBar"></span></div>
+              <div class="small" id="emotionNotes" style="margin-top:6px"></div>
+            </div>
+            <div class="metric">
+              <div class="label"><span>Readability (Flesch)</span><strong id="flesch">–</strong></div>
+              <div class="bar"><span id="readabilityBar"></span></div>
+              <div class="small" id="readabilityNotes" style="margin-top:6px"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TABS -->
+    <section class="card" style="margin-top:18px">
+      <div class="tabbar">
+        <button class="active" data-tab="fixes">Grammar Fixes</button>
+        <button data-tab="emotions">Emotion Detail</button>
+        <button data-tab="metrics">Metrics</button>
+        <button data-tab="original">Original vs Corrected</button>
+      </div>
+      <div class="body">
+        <div id="fixes" class="tab active">
+          <div class="row right" style="margin-bottom:10px">
+            <button class="btn" id="copyFixed">Copy corrected</button>
+          </div>
+          <div class="split">
+            <div>
+              <h3 style="margin:6px 0 6px">Corrected Text</h3>
+              <div id="fixedOut" class="outbox" style="white-space: pre-wrap"></div>
+            </div>
+            <div>
+              <h3 style="margin:6px 0 6px">What changed</h3>
+              <ul id="fixList" class="fix-list"></ul>
+            </div>
+          </div>
+        </div>
+
+        <div id="emotions" class="tab">
+          <div id="emotionBars" class="summary"></div>
+          <div class="small" style="margin-top:8px">Emotions are estimated with a lightweight lexicon; multiple emotions can co‑exist.</div>
+        </div>
+
+        <div id="metrics" class="tab">
+          <div class="summary">
+            <div class="metric">
+              <div class="label"><span>Words</span><strong id="words">–</strong></div>
+              <div class="label"><span>Sentences</span><strong id="sentences">–</strong></div>
+              <div class="label"><span>Avg words/sentence</span><strong id="aws">–</strong></div>
+              <div class="label"><span>Avg word length</span><strong id="awl">–</strong></div>
+            </div>
+            <div class="metric">
+              <div class="label"><span>Contractions</span><strong id="contractions">–</strong></div>
+              <div class="label"><span>Slang/Emoji</span><strong id="slang">–</strong></div>
+              <div class="label"><span>Excess punctuation</span><strong id="punx">–</strong></div>
+              <div class="label"><span>Semicolons/Colons</span><strong id="puncRich">–</strong></div>
+            </div>
+            <div class="metric">
+              <div class="label"><span>F-K Grade</span><strong id="fkgl">–</strong></div>
+              <div class="label"><span>Type–Token Ratio</span><strong id="ttr">–</strong></div>
+              <div class="label"><span>Passive voice (est.)</span><strong id="passive">–</strong></div>
+              <div class="label"><span>Reading time</span><strong id="readtime">–</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="original" class="tab">
+          <div class="split">
+            <div>
+              <h3 style="margin:6px 0 6px">Original</h3>
+              <div id="origOut" class="outbox" style="white-space: pre-wrap"></div>
+            </div>
+            <div>
+              <h3 style="margin:6px 0 6px">Corrected (changes highlighted)</h3>
+              <div id="diffOut" class="outbox" style="white-space: pre-wrap"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Built for quick, local analysis. No uploads, no dependencies.</div>
+  </main>
+
+  <script>
+    // ———————— Utilities
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const pct = (n) => `${clamp(n, 0, 100).toFixed(0)}%`;
+    const safeSplitSentences = (t) => t
+      .replace(/([\.|\?|!])(\s+|$)/g, '$1|')
+      .split('|')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const countSyllables = (word) => {
+      // Simple heuristic syllable counter (not perfect, but good enough for readability indices)
+      word = word.toLowerCase();
+      if (word.length <= 3) return 1;
+      let syl = 0;
+      const vowels = 'aeiouy';
+      let prevVowel = false;
+      for (const ch of word) {
+        const isV = vowels.includes(ch);
+        if (isV && !prevVowel) syl++;
+        prevVowel = isV;
+      }
+      if (word.endsWith('e')) syl--;
+      if (word.endsWith('le') && !vowels.includes(word[word.length-3]||'')) syl++;
+      return Math.max(1, syl);
+    };
+
+    const tokenize = (t) => t
+      .toLowerCase()
+      .replace(/[^a-z0-9'\-\s]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+
+    const uniq = (arr) => [...new Set(arr)];
+
+    const copyToClipboard = async (text) => {
+      try { await navigator.clipboard.writeText(text); toast('Copied corrected text'); } catch (e) { alert('Copy failed'); }
+    }
+
+    function toast(msg) {
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.style.cssText = `position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#141d3a;color:#e8eeff;border:1px solid #ffffff22;padding:10px 14px;border-radius:10px;z-index:99;box-shadow:${getComputedStyle(document.documentElement).getPropertyValue('--shadow')}`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1600);
+    }
+
+    // ———————— Lexicons (compact)
+    const CONTRACTIONS = ["I'm","you're","he's","she's","it's","we're","they're","I've","you've","we've","they've","I'd","you'd","he'd","she'd","we'd","they'd","I'll","you'll","he'll","she'll","we'll","they'll","can't","don't","won't","isn't","aren't","wouldn't","couldn't","shouldn't","didn't","doesn't","haven't","hasn't","hadn't","ain't"]; // used for counting
+
+    const MISSPELLINGS = [
+      { name:'Capitalize I', re:/\bi\b/g, to:'I', hint:"Lowercase ‘i’ ➜ ‘I’" },
+      { name:"I'm contraction", re:/\bim\b/gi, to:"I'm", hint:"‘im’ ➜ ‘I'm’" },
+      { name:"Don't contraction", re:/\bdont\b/gi, to:"don't", hint:"‘dont’ ➜ ‘don't’" },
+      { name:"Can't contraction", re:/\bcant\b/gi, to:"can't", hint:"‘cant’ ➜ ‘can't’" },
+      { name:"Won't contraction", re:/\bwont\b/gi, to:"won't", hint:"‘wont’ ➜ ‘won't’" },
+      { name:"It's vs its (article)", re:/\bits\s+(a|an|the)\b/gi, to:"it's $1", hint:"Possessive ‘its’ used as ‘it is’" },
+      { name:"a/an before vowel", re:/\ba\s+([aeiou][a-z]+)/gi, to:"an $1", hint:"‘a’ ➜ ‘an’ before vowel sound" },
+      { name:"an before consonant", re:/\ban\s+([bcdfghjklmnpqrstvwxyz][a-z]+)/gi, to:"a $1", hint:"‘an’ ➜ ‘a’ before consonant sound" },
+      { name:"Alot ➜ a lot", re:/\balot\b/gi, to:"a lot", hint:"‘alot’ ➜ ‘a lot’" },
+      { name:"Double spaces", re:/  +/g, to:" ", hint:"Condense extra spaces" },
+      { name:"Space after punctuation", re:/([.,;!?])(\S)/g, to:"$1 $2", hint:"Add space after punctuation" },
+      { name:"No space before punctuation", re:/\s+([.,!?;:])/g, to:"$1", hint:"Remove space before punctuation" },
+      { name:"Repeated punctuation", re:/([!?.,])\1{1,}/g, to:"$1", hint:"Reduce repeated punctuation" },
+    ];
+
+    const SLANG = [
+      'gonna','wanna','gotta','kinda','sorta','ain\'t','lol','lmao','rofl','omg','idk','tbh','btw','brb','imo','imho','smh','thx','pls','plz','cuz','coz','tho','u','ur','ya','nah','yup','yep','dude','bro','sis','guyz','fam','hmu','btw','jk','np','gr8','thx','tht','tmrw','msg','btw','fyi','irl','ngl','fr','lowkey','highkey'
+    ];
+
+    const EMO_LEX = {
+      joy: ['happy','joy','cheer','delight','glad','love','loved','smile','smiling','pleased','excited','wonderful','great','fantastic','amazing','awesome','proud','grateful','thrilled','relief','relieved','optimistic','hopeful'],
+      sadness: ['sad','upset','down','depressed','unhappy','heartbroken','mourn','cry','crying','tears','miserable','gloomy','sorrow','regret','lonely','pain','hurt','grief','devastated','disappointed'],
+      anger: ['angry','mad','furious','irritated','annoyed','rage','outraged','hate','hated','resent','fume','livid','offended','disgusted','enraged','frustrated'],
+      fear: ['afraid','scared','terrified','fear','fearful','anxious','anxiety','worried','panic','panicked','nervous','alarmed','concerned','uneasy','apprehensive'],
+      surprise: ['surprised','shocked','astonished','amazed','suddenly','unexpected','wow','whoa','unbelievable'],
+      disgust: ['disgust','gross','nasty','revolting','repulsed','abhorrent','loathsome','sickened','vile','foul']
+    };
+
+    const POSITIVE = ['good','great','excellent','fantastic','love','like','enjoy','success','win','positive','benefit','improve','happy','proud','credible','clear','sound'];
+    const NEGATIVE = ['bad','poor','terrible','awful','hate','dislike','problem','fail','loss','negative','worse','worsen','sad','angry','unclear','weak'];
+
+    const EMO_ORDER = ['joy','sadness','anger','fear','surprise','disgust'];
+
+    // ———————— Grammar Fixer
+    function applyBasicFixes(text) {
+      let fixed = text;
+      const changes = [];
+      for (const rule of MISSPELLINGS) {
+        const before = fixed;
+        fixed = fixed.replace(rule.re, rule.to);
+        if (before !== fixed) {
+          const count = (before.match(rule.re) || []).length; // approximate
+          changes.push(`${rule.name} — ${rule.hint} (${count})`);
+        }
+      }
+
+      // Capitalize sentence starts
+      const sentences = safeSplitSentences(fixed);
+      const capped = sentences.map(s => s.replace(/^[\s]*([a-z])/, (m, p1) => p1.toUpperCase()));
+      const capJoin = capped.join(' ');
+      if (capJoin !== fixed) changes.push('Capitalize sentence starts');
+      fixed = capJoin;
+
+      return { fixed, changes };
+    }
+
+    // Simple word diff to highlight changes
+    function highlightDiff(orig, fixed) {
+      const o = orig.split(/(\s+)/);
+      const f = fixed.split(/(\s+)/);
+      // LCS dynamic programming
+      const dp = Array(o.length+1).fill(null).map(()=>Array(f.length+1).fill(0));
+      for (let i=1;i<=o.length;i++) {
+        for (let j=1;j<=f.length;j++) {
+          dp[i][j] = (o[i-1]===f[j-1]) ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]);
+        }
+      }
+      const out = [];
+      let i=o.length, j=f.length;
+      while(i>0 && j>0){
+        if(o[i-1]===f[j-1]){ out.unshift(o[i-1]); i--; j--; }
+        else if(dp[i-1][j] >= dp[i][j-1]){ out.unshift(`<mark>${escapeHtml(o[i-1])}</mark>`); i--; }
+        else { out.unshift(`<mark>${escapeHtml(f[j-1])}</mark>`); j--; }
+      }
+      while(i>0){ out.unshift(`<mark>${escapeHtml(o[i-1])}</mark>`); i--; }
+      while(j>0){ out.unshift(`<mark>${escapeHtml(f[j-1])}</mark>`); j--; }
+      return out.join('');
+    }
+
+    function escapeHtml(s){ return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+    // ———————— Analysis
+    function analyze(text){
+      const tokens = tokenize(text);
+      const words = tokens.length;
+      const sentences = Math.max(1, safeSplitSentences(text).length);
+      const aws = words / sentences;
+      const awl = tokens.reduce((a,w)=>a+w.length,0)/Math.max(1,words);
+      const unique = uniq(tokens).length;
+      const ttr = unique/Math.max(1,words);
+      const sylls = tokens.reduce((a,w)=>a+countSyllables(w),0);
+      const flesch = 206.835 - 1.015*(words/sentences) - 84.6*(sylls/Math.max(1,words));
+      const fkgl = 0.39*(words/sentences) + 11.8*(sylls/Math.max(1,words)) - 15.59;
+
+      // Sentiment
+      const pos = tokens.filter(t=>POSITIVE.includes(t)).length;
+      const neg = tokens.filter(t=>NEGATIVE.includes(t)).length;
+      const sentimentRaw = (pos - neg);
+      const sentimentScore = clamp((sentimentRaw*12) + 50, 0, 100);
+
+      // Emotions
+      const emoCounts = {};
+      for (const k of EMO_ORDER){ emoCounts[k]=0; }
+      for (const [emo, list] of Object.entries(EMO_LEX)){
+        for (const w of tokens){ if(list.includes(w)) emoCounts[emo]++; }
+      }
+      const emoTotal = Object.values(emoCounts).reduce((a,b)=>a+b,0) || 1;
+      const emoPct = Object.fromEntries(Object.entries(emoCounts).map(([k,v])=>[k, (v/emoTotal)*100]));
+      const topEmotion = Object.entries(emoPct).sort((a,b)=>b[1]-a[1])[0];
+
+      // Informality signals
+      const contractionCount = CONTRACTIONS.reduce((acc,c)=>acc + (text.toLowerCase().includes(c.toLowerCase())? (text.toLowerCase().match(new RegExp(`\\b${c.toLowerCase().replace("'","[\\'’]")}\\b","g"))||[]).length : 0), 0);
+      const slangCount = SLANG.reduce((acc,s)=>acc + (text.toLowerCase().match(new RegExp(`\\b${s.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&')}\\b`,'g'))||[]).length, 0);
+      const emojiCount = (text.match(/[\p{Emoji_Presentation}\p{Emoji}\u200d]/gu)||[]).length;
+      const exclamations = (text.match(/!{1,}/g)||[]).length;
+      const allcapsWords = (text.match(/\b[A-Z]{3,}\b/g)||[]).length;
+      const semicolons = (text.match(/;/g)||[]).length;
+      const colons = (text.match(/:/g)||[]).length;
+
+      // Passive voice (very rough): forms of "be" + past participle suffix -ed/-en
+      const passive = (text.match(/\b(am|is|are|was|were|be|been|being)\s+\w+(ed|en)\b/gi)||[]).length;
+
+      // Formality score: 0–100
+      let formality = 50;
+      formality += clamp((awl-4)*8, -20, 20);            // longer words increase formality
+      formality += clamp((aws-12)*2, -20, 20);           // longer sentences increase formality
+      formality += Math.min(semicolons*4 + colons*2, 14);// punctuation richness
+      formality -= Math.min(contractionCount*2, 18);
+      formality -= Math.min((slangCount+emojiCount)*6, 24);
+      formality -= Math.min(exclamations*2 + allcapsWords*1.5, 18);
+      formality = clamp(formality, 0, 100);
+
+      const readMins = Math.max(1, Math.round(words/200));
+
+      return {
+        words, sentences, aws, awl, unique, ttr, sylls, flesch, fkgl,
+        sentimentScore, pos, neg,
+        emoCounts, emoPct, topEmotion,
+        contractionCount, slangCount, emojiCount, exclamations, allcapsWords, semicolons, colons,
+        passive,
+        formality,
+        readMins
+      }
+    }
+
+    // ———————— DOM wiring
+    const $ = (s) => document.querySelector(s);
+    const setBar = (id, val) => { const el = $(id); if (el) el.style.width = pct(val); };
+
+    function renderSummary(a){
+      $('#formalityLabel').textContent = `${a.formality.toFixed(0)}/100`;
+      setBar('#formalityBar', a.formality);
+      $('#formalityNotes').textContent = labelFormality(a.formality);
+
+      $('#sentimentLabel').textContent = labelSentiment(a.sentimentScore);
+      setBar('#sentimentBar', a.sentimentScore);
+      $('#sentimentNotes').textContent = `Pos ${a.pos} • Neg ${a.neg}`;
+
+      const [emo, val] = a.topEmotion || ['n/a', 0];
+      $('#topEmotion').textContent = `${emo} (${val.toFixed(0)}%)`;
+      setBar('#emotionBar', val);
+      $('#emotionNotes').textContent = `Multiple emotions may appear together.`;
+
+      $('#flesch').textContent = a.flesch.toFixed(1);
+      const ease = clamp((a.flesch+20), 0, 100);
+      setBar('#readabilityBar', ease);
+      $('#readabilityNotes').textContent = describeFlesch(a.flesch);
+
+      renderFlags(a);
+    }
+
+    function renderFlags(a){
+      const flags = [];
+      if (a.contractionCount>0) flags.push(`${a.contractionCount} contraction${a.contractionCount>1?'s':''}`);
+      if (a.slangCount>0 || a.emojiCount>0) flags.push(`${a.slangCount} slang • ${a.emojiCount} emoji`);
+      if (a.exclamations>1) flags.push(`${a.exclamations} exclamations`);
+      if (a.allcapsWords>0) flags.push(`${a.allcapsWords} ALL‑CAPS words`);
+      if (a.semicolons+ a.colons>0) flags.push(`${a.semicolons} ; • ${a.colons} :`);
+      if (a.passive>0) flags.push(`${a.passive} passive constructions`);
+      $('#flags').innerHTML = flags.map(f=>`<span class="chip">${f}</span>`).join('');
+    }
+
+    function labelFormality(n){
+      if (n>=80) return 'Highly formal (academic/professional)';
+      if (n>=60) return 'Moderately formal (business casual)';
+      if (n>=40) return 'Neutral / mixed';
+      if (n>=20) return 'Informal (conversational)';
+      return 'Very informal (chatty/slangy)';
+    }
+
+    function labelSentiment(n){
+      if (n>66) return `Positive (${n.toFixed(0)}/100)`;
+      if (n<34) return `Negative (${n.toFixed(0)}/100)`;
+      return `Neutral (${n.toFixed(0)}/100)`;
+    }
+
+    function describeFlesch(f){
+      if (f>=90) return 'Very easy (child‑level)';
+      if (f>=70) return 'Easy (conversational)';
+      if (f>=60) return 'Plain English';
+      if (f>=50) return 'Fairly difficult';
+      if (f>=30) return 'Difficult (college)';
+      return 'Very difficult (post‑grad)';
+    }
+
+    function renderEmotionBars(emoPct){
+      const wrap = $('#emotionBars');
+      wrap.innerHTML = EMO_ORDER.map(k=>{
+        const v = emoPct[k] || 0;
+        return `<div class="metric"><div class="label"><span>${k[0].toUpperCase()+k.slice(1)}</span><strong>${v.toFixed(0)}%</strong></div><div class="bar"><span style="width:${pct(v)}"></span></div></div>`
+      }).join('');
+    }
+
+    function renderMetrics(a){
+      $('#words').textContent = a.words;
+      $('#sentences').textContent = a.sentences;
+      $('#aws').textContent = a.aws.toFixed(1);
+      $('#awl').textContent = a.awl.toFixed(2);
+      $('#contractions').textContent = a.contractionCount;
+      $('#slang').textContent = `${a.slangCount} slang • ${a.emojiCount} emoji`;
+      $('#punx').textContent = `${a.exclamations} ! • ${a.allcapsWords} ALL‑CAPS`;
+      $('#puncRich').textContent = `${a.semicolons} ; • ${a.colons} :`;
+      $('#fkgl').textContent = a.fkgl.toFixed(1);
+      $('#ttr').textContent = a.ttr.toFixed(2);
+      $('#passive').textContent = a.passive;
+      $('#readtime').textContent = `${a.readMins} min`;
+    }
+
+    function run(){
+      const text = $('#input').value || '';
+      if (!text.trim()) { toast('Please enter some text'); return; }
+      const analysis = analyze(text);
+      renderSummary(analysis);
+      renderEmotionBars(analysis.emoPct);
+      renderMetrics(analysis);
+
+      const { fixed, changes } = applyBasicFixes(text);
+      $('#fixedOut').textContent = fixed;
+      $('#origOut').textContent = text;
+      $('#diffOut').innerHTML = highlightDiff(text, fixed);
+      $('#fixList').innerHTML = changes.length ? changes.map(c=>`<li>${c}</li>`).join('') : '<li>No basic fixes applied.</li>';
+    }
+
+    // Tabs
+    document.querySelectorAll('.tabbar button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      })
+    })
+
+    // Buttons
+    $('#analyze').addEventListener('click', run);
+    $('#clear').addEventListener('click', ()=>{ $('#input').value=''; $('#fixedOut').textContent=''; $('#origOut').textContent=''; $('#diffOut').textContent=''; $('#fixList').innerHTML=''; $('#flags').innerHTML=''; document.querySelectorAll('.bar > span').forEach(s=>s.style.width='0%'); document.querySelectorAll('#formalityLabel,#sentimentLabel,#topEmotion,#flesch').forEach(e=>e.textContent='–'); });
+    $('#copyFixed').addEventListener('click', ()=> copyToClipboard($('#fixedOut').textContent||''));
+    $('#sample').addEventListener('click', ()=>{
+      const demo = "hey! i was kinda nervous about the meeting tmrw, but i'm also excited :) the plan is clear i think, but its a big change and ppl might be mad. we gotta move fast!!";
+      $('#input').value = demo; run();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e)=>{
+      if ((e.ctrlKey||e.metaKey) && e.key === 'Enter') { e.preventDefault(); run(); }
+      if ((e.ctrlKey||e.metaKey) && (e.key.toLowerCase() === 'b')) { e.preventDefault(); copyToClipboard($('#fixedOut').textContent||''); }
+    })
+  </script>
+</body>
+</html>
