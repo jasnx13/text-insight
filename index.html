@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text Insight</title>
+    <title>Text Insight AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -48,11 +48,39 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="relative mx-auto p-6 border w-full max-w-md shadow-lg rounded-xl bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-2xl leading-6 font-bold text-gray-900" data-translate="api_modal_title">API Key Required</h3>
+                <div class="mt-4 px-2 py-3 text-left">
+                    <p class="text-sm text-gray-600 mb-4" data-translate="api_modal_description">
+                        Please enter your Google AI API key to use this application. Your key is stored securely in your browser and is never sent to us.
+                    </p>
+                    <label for="apiKeyInput" class="block text-sm font-medium text-gray-700" data-translate="api_modal_input_label">Your Google AI API Key</label>
+                    <input type="password" id="apiKeyInput" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400
+                        focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500" placeholder="•••••••••••••••••••••••••••••••">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-blue-600 hover:underline mt-2 inline-block" data-translate="api_modal_get_key_link">
+                        Get your free API key from Google AI Studio &rarr;
+                    </a>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="saveApiKeyBtn" class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400" data-translate="api_modal_save_button">
+                        Save and Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto p-4 md:p-8 max-w-6xl">
         <header class="text-center mb-8 relative">
             <h1 class="text-4xl md:text-5xl font-bold text-gray-900" data-translate="title">Text Insight AI</h1>
-            <p class="text-md text-gray-600 mt-2" data-translate="subtitle">Analyze, understand, and refine your writing.</p>
-             <div class="absolute top-0 right-0">
+            <p class="text-md text-gray-600 mt-2" data-translate="subtitle">Analyze, understand, and refine your writing with the power of AI.</p>
+             <div class="absolute top-0 right-0 flex items-center space-x-2">
+                 <button id="settingsBtn" title="Change API Key" class="p-2 rounded-full hover:bg-gray-200 transition-colors">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                 </button>
                 <select id="languageSelector" class="mt-1 block pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                     <option value="en">English</option>
                     <option value="fr">Français</option>
@@ -62,7 +90,7 @@
             </div>
         </header>
 
-        <main class="space-y-8">
+        <mn class="space-y-8">
             <!-- Top Section: Input and Analysis -->
             <div class="bg-white p-6 rounded-2xl shadow-lg">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -70,7 +98,7 @@
                     <div class="flex flex-col">
                         <h2 class="text-2xl font-semibold mb-4 text-gray-800" data-translate="your_text_title">Your Text</h2>
                         <textarea id="inputText" class="w-full flex-grow p-4 border border-gray-300 rounded-lg resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" data-translate-placeholder="text_area_placeholder"></textarea>
-                        <button id="analyzeBtn" class="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md flex items-center justify-center">
+                        <button id="analyzeBtn" class="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
                             <span data-translate="analyze_button">Analyze Text</span>
                         </button>
@@ -84,7 +112,7 @@
                         </div>
                         <!-- Analysis Results -->
                         <div id="analysisResults" class="space-y-4">
-                            <div id="effectiveness-container" class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div id="effectiveness-contner" class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <h3 class="font-semibold text-lg text-gray-800" data-translate="effectiveness_score_title">Effectiveness Score</h3>
                                 <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
                                     <div id="effectiveness-bar" class="bg-gray-400 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -93,15 +121,15 @@
                             </div>
                             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <h3 class="font-semibold text-lg text-gray-800" data-translate="formality_title">Formality</h3>
-                                <p id="formality-result" class="text-gray-600" data-translate="waiting_for_text">Waiting for text...</p>
+                                <p id="formality-result" class="text-gray-600" data-translate="wting_for_text">Wting for text...</p>
                             </div>
                             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <h3 class="font-semibold text-lg text-gray-800" data-translate="emotion_title">Emotion</h3>
-                                <p id="emotion-result" class="text-gray-600" data-translate="waiting_for_text">Waiting for text...</p>
+                                <p id="emotion-result" class="text-gray-600" data-translate="wting_for_text">Wting for text...</p>
                             </div>
                             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <h3 class="font-semibold text-lg text-gray-800" data-translate="readability_title">Readability</h3>
-                                <p id="readability-result" class="text-gray-600" data-translate="waiting_for_text">Waiting for text...</p>
+                                <p id="readability-result" class="text-gray-600" data-translate="wting_for_text">Waiting for text...</p>
                             </div>
                         </div>
                     </div>
@@ -143,7 +171,7 @@
                     </div>
                 </div>
 
-                <button id="paraphraseBtn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md flex items-center justify-center">
+                <button id="paraphraseBtn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
                     <span data-translate="paraphrase_button">Paraphrase Text</span>
                 </button>
@@ -205,10 +233,14 @@
         const errorModal = document.getElementById('errorModal');
         const errorMessage = document.getElementById('errorMessage');
         const closeModalBtn = document.getElementById('closeModalBtn');
-        
-        const apiKey = ""; // API key will be provided by the execution environment.
 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+        const apiKeyModal = document.getElementById('apiKeyModal');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+
+        let apiKey = "";
+        let API_URL; 
 
         const uiStrings = {
             en: {
@@ -252,7 +284,14 @@
                 enter_text_to_paraphrase: "Please enter some text to paraphrase.",
                 failed_to_copy: "Failed to copy text to clipboard.",
                 safety_block_error: "The request was blocked for safety reasons. Please try modifying your text.",
-                invalid_response_error: "The AI returned an invalid or empty response. Please try again."
+                invalid_response_error: "The AI returned an invalid or empty response. Please try again.",
+                api_modal_title: "API Key Required",
+                api_modal_description: "Please enter your Google AI API key to use this application. Your key is stored securely in your browser and is never sent to us.",
+                api_modal_input_label: "Your Google AI API Key",
+                api_modal_get_key_link: "Get your free API key from Google AI Studio →",
+                api_modal_save_button: "Save and Continue",
+                invalid_api_key: "The provided API key is invalid. Please check and try again.",
+                rate_limit_error: "You've exceeded the free request limit (60 requests per minute). Please wait a moment and try again."
             },
             fr: {
                 title: "IA d'Analyse de Texte",
@@ -295,7 +334,14 @@
                 enter_text_to_paraphrase: "Veuillez entrer du texte à paraphraser.",
                 failed_to_copy: "Échec de la copie du texte dans le presse-papiers.",
                 safety_block_error: "La demande a été bloquée pour des raisons de sécurité. Veuillez essayer de modifier votre texte.",
-                invalid_response_error: "L'IA a renvoyé une réponse invalide ou vide. Veuillez réessayer."
+                invalid_response_error: "L'IA a renvoyé une réponse invalide ou vide. Veuillez réessayer.",
+                api_modal_title: "Clé API Requise",
+                api_modal_description: "Veuillez entrer votre clé API Google AI pour utiliser cette application. Votre clé est stockée en toute sécurité dans votre navigateur et ne nous est jamais envoyée.",
+                api_modal_input_label: "Votre Clé API Google AI",
+                api_modal_get_key_link: "Obtenez votre clé API gratuite sur Google AI Studio →",
+                api_modal_save_button: "Enregistrer et Continuer",
+                invalid_api_key: "La clé API fournie n'est pas valide. Veuillez vérifier et réessayer.",
+                rate_limit_error: "Vous avez dépassé la limite de requêtes gratuites (60 requêtes par minute). Veuillez patienter un moment et réessayer."
             },
             es: {
                 title: "IA de Análisis de Texto",
@@ -338,7 +384,14 @@
                 enter_text_to_paraphrase: "Por favor, introduce texto para parafrasear.",
                 failed_to_copy: "Error al copiar el texto al portapapeles.",
                 safety_block_error: "La solicitud fue bloqueada por motivos de seguridad. Por favor, intente modificar su texto.",
-                invalid_response_error: "La IA devolvió una respuesta no válida o vacía. Inténtalo de nuevo."
+                invalid_response_error: "La IA devolvió una respuesta no válida o vacía. Inténtalo de nuevo.",
+                api_modal_title: "Se Requiere Clave de API",
+                api_modal_description: "Por favor, ingrese su clave de API de Google AI para usar esta aplicación. Su clave se almacena de forma segura en su navegador y nunca se nos envía.",
+                api_modal_input_label: "Su Clave de API de Google AI",
+                api_modal_get_key_link: "Obtenga su clave de API gratuita de Google AI Studio →",
+                api_modal_save_button: "Guardar y Continuar",
+                invalid_api_key: "La clave de API proporcionada no es válida. Por favor, verifique y vuelva a intentarlo.",
+                rate_limit_error: "Ha superado el límite de solicitudes gratuitas (60 solicitudes por minuto). Por favor, espere un momento y vuelva a intentarlo."
             },
             zh: {
                 title: "文本洞察AI",
@@ -381,9 +434,26 @@
                 enter_text_to_paraphrase: "请输入要改写的文本。",
                 failed_to_copy: "无法将文本复制到剪贴板。",
                 safety_block_error: "由于安全原因，该请求已被阻止。请尝试修改您的文本。",
-                invalid_response_error: "AI返回了无效或空的响应。请再试一次。"
+                invalid_response_error: "AI返回了无效或空的响应。请再试一次。",
+                api_modal_title: "需要 API 密钥",
+                api_modal_description: "请输入您的 Google AI API 密钥以使用此应用程序。您的密钥会安全地存储在您的浏览器中，绝不会发送给我们。",
+                api_modal_input_label: "您的 Google AI API 密钥",
+                api_modal_get_key_link: "从 Google AI Studio 获取免费 API 密钥 →",
+                api_modal_save_button: "保存并继续",
+                invalid_api_key: "提供的 API 密钥无效。请检查后重试。",
+                rate_limit_error: "您已超出免费请求限制（每分钟60次请求）。请稍等片刻再试。"
             }
         };
+
+        function setupApiKey(key) {
+            apiKey = key;
+            API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            analyzeBtn.disabled = false;
+            paraphraseBtn.disabled = false;
+            analyzeBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
+            paraphraseBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
+            apiKeyModal.classList.add('hidden');
+        }
 
         function updateUI(lang) {
             const strings = uiStrings[lang];
@@ -417,43 +487,45 @@
             }
         }
         
-        async function callGeminiApi(payload, maxRetries = 3) {
-            let attempt = 0;
-            while (attempt < maxRetries) {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
-                    }
-                    
-                    const result = await response.json();
-                    const candidate = result.candidates?.[0];
-
-                    if (!candidate || !candidate.content?.parts?.[0]?.text) {
-                       const lang = languageSelector.value;
-                       if (result.promptFeedback && result.promptFeedback.blockReason) {
-                           throw new Error(uiStrings[lang].safety_block_error);
-                       }
-                       throw new Error(uiStrings[lang].invalid_response_error);
-                    }
-
-                    return result;
-
-                } catch (error) {
-                    attempt++;
-                    console.error(`Attempt ${attempt} failed:`, error);
-                    if (attempt >= maxRetries) {
-                        throw error; // Re-throw the last error to be caught by the calling function
-                    }
-                    const delay = Math.pow(2, attempt) * 1000;
-                    await new Promise(resolve => setTimeout(resolve, delay));
+        async function callGeminiApi(payload) {
+             const lang = languageSelector.value;
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.status === 429) {
+                    throw new Error(uiStrings[lang].rate_limit_error);
                 }
+
+                if (!response.ok) {
+                    if (response.status === 400) {
+                         throw new Error(uiStrings[lang].invalid_api_key);
+                    }
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+                }
+                
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (!candidate || !candidate.content?.parts?.[0]?.text) {
+                   if (result.promptFeedback && result.promptFeedback.blockReason) {
+                       throw new Error(uiStrings[lang].safety_block_error);
+                   }
+                   throw new Error(uiStrings[lang].invalid_response_error);
+                }
+
+                return result;
+
+            } catch (error) {
+                console.error(`API call failed:`, error);
+                if (error.message.includes("API key not valid")) {
+                     error.message = uiStrings[lang].invalid_api_key;
+                }
+                throw error; // Re-throw the error to be caught by the calling function
             }
         }
         
@@ -512,6 +584,10 @@
             } catch (error) {
                 console.error('Analysis failed:', error);
                 showErrorModal(error.message || uiStrings[lang].error_modal_default_message);
+                if (error.message.includes(uiStrings[lang].invalid_api_key)) {
+                    localStorage.removeItem('userApiKey');
+                    apiKeyModal.classList.remove('hidden');
+                }
                 resetAnalysisUI();
             } finally {
                 analysisLoader.classList.add('hidden');
@@ -593,6 +669,10 @@ Paraphrased Text:`;
             } catch (error) {
                 console.error('Paraphrasing failed:', error);
                 showErrorModal(error.message || uiStrings[lang].error_modal_default_message);
+                 if (error.message.includes(uiStrings[lang].invalid_api_key)) {
+                    localStorage.removeItem('userApiKey');
+                    apiKeyModal.classList.remove('hidden');
+                }
             } finally {
                 paraphraseLoader.classList.add('hidden');
                 paraphraseBtn.disabled = false;
@@ -636,10 +716,30 @@ Paraphrased Text:`;
                 errorModal.classList.add('hidden');
             }
         });
+        
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('userApiKey', key);
+                setupApiKey(key);
+            }
+        });
+        
+        settingsBtn.addEventListener('click', () => {
+            const savedKey = localStorage.getItem('userApiKey');
+            apiKeyInput.value = savedKey || '';
+            apiKeyModal.classList.remove('hidden');
+        });
 
-        // Initial UI setup
+        // Initial UI setup and API Key Check
         document.addEventListener('DOMContentLoaded', () => {
             updateUI('en');
+            const savedKey = localStorage.getItem('userApiKey');
+            if (savedKey) {
+                setupApiKey(savedKey);
+            } else {
+                apiKeyModal.classList.remove('hidden');
+            }
         });
 
     </script>
