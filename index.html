@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Text Insight — Dual Mode</title>
+  <style>
+    body{font-family:sans-serif;background:#0b1020;color:#fff;margin:0;padding:0}
+    header{background:#121a33;padding:10px 20px;position:sticky;top:0}
+    h1{margin:0;font-size:22px}
+    .wrap{max-width:1000px;margin:auto;padding:20px}
+    textarea{width:100%;height:200px;border-radius:8px;border:1px solid #555;padding:10px;background:#0f1631;color:#fff}
+    .btn{padding:8px 14px;margin:5px;border-radius:6px;border:none;cursor:pointer;font-weight:600}
+    .btn.primary{background:#7aa2ff;color:#0b1020}
+    .btn.secondary{background:#24325f;color:#c7d6ff}
+    .section{background:#141d3a;padding:15px;border-radius:10px;margin-top:15px}
+    .progress{background:#333;height:8px;border-radius:8px;overflow:hidden;margin-top:5px}
+    .progress span{display:block;height:100%;width:0;background:#7aa2ff;transition:width .3s ease}
+    .status{font-size:14px;color:#8ea0c0;margin-top:4px}
+    .outbox{background:#0a0f23;padding:10px;border-radius:8px;white-space:pre-wrap}
+  </style>
+</head>
+<body>
+  <header><h1>Text Insight — Dual Mode</h1></header>
+  <main class="wrap">
+    <div class="section">
+      <textarea id="input" placeholder="Paste your text here..."></textarea><br>
+      <label><input type="radio" name="mode" value="local" checked> Local (no API)</label>
+      <label><input type="radio" name="mode" value="api"> API</label><br>
+      <input id="apiUrl" placeholder="http://localhost:8080" style="display:none;margin-top:6px;width:60%"><br>
+      <button class="btn primary" id="analyze">Analyze</button>
+      <button class="btn secondary" id="connect" style="display:none">Connect API</button>
+      <div id="apiLoader" style="display:none">
+        <div class="progress"><span id="bar"></span></div>
+        <div class="status" id="status">Idle</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Corrected Text</h3>
+      <div id="fixedOut" class="outbox"></div>
+    </div>
+    <div class="section">
+      <h3>Analysis Summary</h3>
+      <div id="summary"></div>
+    </div>
+  </main>
+
+  <script>
+    const input=document.querySelector('#input'),fixedOut=document.querySelector('#fixedOut'),summary=document.querySelector('#summary');
+    const apiUrl=document.querySelector('#apiUrl'),apiLoader=document.querySelector('#apiLoader'),bar=document.querySelector('#bar'),status=document.querySelector('#status');
+
+    document.querySelectorAll('input[name=mode]').forEach(r=>{
+      r.addEventListener('change',()=>{
+        const show=(r.value==='api' && r.checked);
+        apiUrl.style.display=show?'block':'none';
+        document.querySelector('#connect').style.display=show?'inline-block':'none';
+      })
+    });
+
+    document.querySelector('#analyze').addEventListener('click',async()=>{
+      const text=input.value.trim();
+      if(!text){alert('Enter text');return}
+      const mode=document.querySelector('input[name=mode]:checked').value;
+      if(mode==='local') runLocal(text);
+      else runApi(text);
+    });
+
+    function runLocal(text){
+      let fixed=text.replace(/\bi\b/g,'I');
+      fixed=fixed.replace(/\bdont\b/gi,"don't");
+      fixed=fixed.replace(/\bcant\b/gi,"can't");
+      fixedOut.textContent=fixed;
+      summary.textContent=`Local analysis done. Words: ${text.split(/\s+/).length}`;
+    }
+
+    document.querySelector('#connect').addEventListener('click',connectApi);
+
+    async function connectApi(){
+      apiLoader.style.display='block';
+      bar.style.width='10%'; status.textContent='Connecting...';
+      try{
+        const resp=await fetch(apiUrl.value+'/health');
+        if(!resp.ok) throw new Error('HTTP '+resp.status);
+        const data=await resp.json();
+        bar.style.width='100%'; status.textContent='Connected to '+(data.model||'server');
+      }catch(e){status.textContent='Failed: '+e.message;bar.style.width='0';}
+    }
+
+    async function runApi(text){
+      apiLoader.style.display='block';
+      status.textContent='Sending request...'; bar.style.width='20%';
+      try{
+        const resp=await fetch(apiUrl.value+'/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+        bar.style.width='70%'; status.textContent='Processing response...';
+        const data=await resp.json();
+        fixedOut.textContent=data.corrected_text||'';
+        summary.textContent='API analysis complete. Formality: '+data.formality+' Sentiment: '+data.sentiment_score;
+        bar.style.width='100%'; status.textContent='Done';
+      }catch(e){fixedOut.textContent='API call failed.';summary.textContent=e.message;}
+      setTimeout(()=>apiLoader.style.display='none',2000);
+    }
+  </script>
+</body>
+</html>
