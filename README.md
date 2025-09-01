@@ -31,7 +31,7 @@ This project was developed in my spare time to help myself and others explore th
 
 ## **🚀 Live Demo**
 
-Experience the application live: 
+Experience the application live(Google API Key needed, overuse can costs): 
 
 **https://jasnx13.github.io/text-insight**
 
