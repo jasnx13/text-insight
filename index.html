@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Insight AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom scrollbar for better aesthetics */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+        <header class="text-center mb-8 relative">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900" data-translate="title">Text Insight AI</h1>
+            <p class="text-md text-gray-600 mt-2" data-translate="subtitle">Analyze, understand, and refine your writing with the power of AI.</p>
+             <div class="absolute top-0 right-0">
+                <select id="languageSelector" class="mt-1 block pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="es">Español</option>
+                    <option value="zh">简体中文</option>
+                </select>
+            </div>
+        </header>
+
+        <main class="space-y-8">
+            <!-- Top Section: Input and Analysis -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Column: Input -->
+                    <div class="flex flex-col">
+                        <h2 class="text-2xl font-semibold mb-4 text-gray-800" data-translate="your_text_title">Your Text</h2>
+                        <textarea id="inputText" class="w-full flex-grow p-4 border border-gray-300 rounded-lg resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" data-translate-placeholder="text_area_placeholder"></textarea>
+                        <button id="analyzeBtn" class="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-md flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                            <span data-translate="analyze_button">Analyze Text</span>
+                        </button>
+                    </div>
+                    <!-- Right Column: Analysis -->
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4 text-gray-800" data-translate="analysis_title">Analysis</h2>
+                         <!-- Loader for analysis -->
+                        <div id="analysisLoader" class="hidden flex justify-center items-center py-4">
+                            <div class="loader"></div>
+                        </div>
+                        <!-- Analysis Results -->
+                        <div id="analysisResults" class="space-y-4">
+                            <div id="effectiveness-container" class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <h3 class="font-semibold text-lg text-gray-800" data-translate="effectiveness_score_title">Effectiveness Score</h3>
+                                <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
+                                    <div id="effectiveness-bar" class="bg-gray-400 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                                <p id="effectiveness-reason" class="text-gray-600 text-sm mt-1" data-translate="effectiveness_reason_placeholder">Analysis will appear here.</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <h3 class="font-semibold text-lg text-gray-800" data-translate="formality_title">Formality</h3>
+                                <p id="formality-result" class="text-gray-600" data-translate="waiting_for_text">Waiting for text...</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <h3 class="font-semibold text-lg text-gray-800" data-translate="emotion_title">Emotion</h3>
+                                <p id="emotion-result" class="text-gray-600" data-translate="waiting_for_text">Waiting for text...</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <h3 class="font-semibold text-lg text-gray-800" data-translate="readability_title">Readability</h3>
+                                <p id="readability-result" class="text-gray-600" data-translate="waiting_for_text">Waiting for text...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section: Paraphrasing -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800" data-translate="paraphrasing_tool_title">Paraphrasing Tool</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label for="purpose" class="block text-sm font-medium text-gray-700" data-translate="purpose_label">Purpose</label>
+                        <select id="purpose" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="AI Humanizing" data-translate="purpose_option_humanize">AI Humanizing</option>
+                            <option value="Improve Grammar & Fluency" selected data-translate="purpose_option_improve">Improve Grammar & Fluency</option>
+                            <option value="Shorten" data-translate="purpose_option_shorten">Shorten</option>
+                            <option value="Expand" data-translate="purpose_option_expand">Expand</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tone" class="block text-sm font-medium text-gray-700" data-translate="tone_label">Tone</label>
+                        <select id="tone" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="Same as original" data-translate="tone_option_original">Same as original</option>
+                            <option value="More Professional" data-translate="tone_option_professional">More Professional</option>
+                            <option value="More Casual" data-translate="tone_option_casual">More Casual</option>
+                            <option value="More Confident" data-translate="tone_option_confident">More Confident</option>
+                            <option value="Simpler" data-translate="tone_option_simpler">Simpler</option>
+                            <option value="More Persuasive" data-translate="tone_option_persuasive">More Persuasive</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="difference" class="block text-sm font-medium text-gray-700" data-translate="difference_label">Difference</label>
+                        <select id="difference" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="Minor Changes" data-translate="difference_option_minor">Minor Changes</option>
+                            <option value="Balanced" selected data-translate="difference_option_balanced">Balanced</option>
+                            <option value="Major Overhaul" data-translate="difference_option_major">Major Overhaul</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="paraphraseBtn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-300 shadow-md flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                    <span data-translate="paraphrase_button">Paraphrase Text</span>
+                </button>
+                
+                <div class="mt-6 flex-grow flex flex-col">
+                    <div id="paraphraseLoader" class="hidden flex justify-center items-center py-4">
+                        <div class="loader"></div>
+                    </div>
+                    <textarea id="outputText" readonly class="w-full h-48 flex-grow p-4 bg-gray-50 border border-gray-200 rounded-lg resize-y" data-translate-placeholder="paraphrase_placeholder"></textarea>
+                    <button id="copyBtn" class="mt-2 bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" /><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" /></svg>
+                        <span data-translate="copy_button">Copy Text</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Error Modal -->
+        <div id="errorModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2" data-translate="error_modal_title">An Error Occurred</h3>
+                    <div class="mt-2 px-7 py-3">
+                        <p id="errorMessage" class="text-sm text-gray-500" data-translate="error_modal_default_message">Could not connect to the AI service. Please try again later.</p>
+                    </div>
+                    <div class="items-center px-4 py-3">
+                        <button id="closeModalBtn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300" data-translate="error_modal_close_button">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const languageSelector = document.getElementById('languageSelector');
+        
+        const inputText = document.getElementById('inputText');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const analysisLoader = document.getElementById('analysisLoader');
+        const analysisResultsEl = document.getElementById('analysisResults');
+
+        const effectivenessBar = document.getElementById('effectiveness-bar');
+        const effectivenessReason = document.getElementById('effectiveness-reason');
+        const formalityResult = document.getElementById('formality-result');
+        const emotionResult = document.getElementById('emotion-result');
+        const readabilityResult = document.getElementById('readability-result');
+
+        const paraphraseBtn = document.getElementById('paraphraseBtn');
+        const outputText = document.getElementById('outputText');
+        const paraphraseLoader = document.getElementById('paraphraseLoader');
+        const copyBtn = document.getElementById('copyBtn');
+        let copyBtnDefaultText = 'Copy Text';
+
+        const errorModal = document.getElementById('errorModal');
+        const errorMessage = document.getElementById('errorMessage');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        const apiKey = ""; // API key will be provided by the execution environment.
+
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        const uiStrings = {
+            en: {
+                title: "Text Insight AI",
+                subtitle: "Analyze, understand, and refine your writing with the power of AI.",
+                your_text_title: "Your Text",
+                text_area_placeholder: "Enter or paste your text here...",
+                analyze_button: "Analyze Text",
+                analysis_title: "Analysis",
+                effectiveness_score_title: "Effectiveness Score",
+                effectiveness_reason_placeholder: "Analysis will appear here.",
+                waiting_for_text: "Waiting for text...",
+                formality_title: "Formality",
+                emotion_title: "Emotion",
+                readability_title: "Readability",
+                paraphrasing_tool_title: "Paraphrasing Tool",
+                purpose_label: "Purpose",
+                purpose_option_humanize: "AI Humanizing",
+                purpose_option_improve: "Improve Grammar & Fluency",
+                purpose_option_shorten: "Shorten",
+                purpose_option_expand: "Expand",
+                tone_label: "Tone",
+                tone_option_original: "Same as original",
+                tone_option_professional: "More Professional",
+                tone_option_casual: "More Casual",
+                tone_option_confident: "More Confident",
+                tone_option_simpler: "Simpler",
+                tone_option_persuasive: "More Persuasive",
+                difference_label: "Difference",
+                difference_option_minor: "Minor Changes",
+                difference_option_balanced: "Balanced",
+                difference_option_major: "Major Overhaul",
+                paraphrase_button: "Paraphrase Text",
+                paraphrase_placeholder: "Paraphrased text will appear here...",
+                copy_button: "Copy Text",
+                copied_button: "Copied!",
+                error_modal_title: "An Error Occurred",
+                error_modal_default_message: "Could not connect to the AI service. Please try again later.",
+                error_modal_close_button: "Close",
+                enter_text_to_analyze: "Please enter some text to analyze.",
+                enter_text_to_paraphrase: "Please enter some text to paraphrase.",
+                failed_to_copy: "Failed to copy text to clipboard.",
+                safety_block_error: "The request was blocked for safety reasons. Please try modifying your text.",
+                invalid_response_error: "The AI returned an invalid or empty response. Please try again."
+            },
+            fr: {
+                title: "IA d'Analyse de Texte",
+                subtitle: "Analysez, comprenez et affinez votre écriture avec la puissance de l'IA.",
+                your_text_title: "Votre Texte",
+                text_area_placeholder: "Entrez ou collez votre texte ici...",
+                analyze_button: "Analyser le Texte",
+                analysis_title: "Analyse",
+                effectiveness_score_title: "Score d'Efficacité",
+                effectiveness_reason_placeholder: "L'analyse apparaîtra ici.",
+                waiting_for_text: "En attente de texte...",
+                formality_title: "Formalité",
+                emotion_title: "Émotion",
+                readability_title: "Lisibilité",
+                paraphrasing_tool_title: "Outil de Paraphrase",
+                purpose_label: "Objectif",
+                purpose_option_humanize: "Humanisation IA",
+                purpose_option_improve: "Améliorer Grammaire & Fluidité",
+                purpose_option_shorten: "Raccourcir",
+                purpose_option_expand: "Développer",
+                tone_label: "Ton",
+                tone_option_original: "Identique à l'original",
+                tone_option_professional: "Plus Professionnel",
+                tone_option_casual: "Plus Décontracté",
+                tone_option_confident: "Plus Confiant",
+                tone_option_simpler: "Plus Simple",
+                tone_option_persuasive: "Plus Persuasif",
+                difference_label: "Différence",
+                difference_option_minor: "Changements Mineurs",
+                difference_option_balanced: "Équilibré",
+                difference_option_major: "Refonte Majeure",
+                paraphrase_button: "Paraphraser le Texte",
+                paraphrase_placeholder: "Le texte paraphrasé apparaîtra ici...",
+                copy_button: "Copier le Texte",
+                copied_button: "Copié !",
+                error_modal_title: "Une Erreur est Survenue",
+                error_modal_default_message: "Impossible de se connecter au service d'IA. Veuillez réessayer plus tard.",
+                error_modal_close_button: "Fermer",
+                enter_text_to_analyze: "Veuillez entrer du texte à analyser.",
+                enter_text_to_paraphrase: "Veuillez entrer du texte à paraphraser.",
+                failed_to_copy: "Échec de la copie du texte dans le presse-papiers.",
+                safety_block_error: "La demande a été bloquée pour des raisons de sécurité. Veuillez essayer de modifier votre texte.",
+                invalid_response_error: "L'IA a renvoyé une réponse invalide ou vide. Veuillez réessayer."
+            },
+            es: {
+                title: "IA de Análisis de Texto",
+                subtitle: "Analiza, comprende y perfecciona tu escritura con el poder de la IA.",
+                your_text_title: "Tu Texto",
+                text_area_placeholder: "Introduce o pega tu texto aquí...",
+                analyze_button: "Analizar Texto",
+                analysis_title: "Análisis",
+                effectiveness_score_title: "Puntuación de Eficacia",
+                effectiveness_reason_placeholder: "El análisis aparecerá aquí.",
+                waiting_for_text: "Esperando texto...",
+                formality_title: "Formalidad",
+                emotion_title: "Emoción",
+                readability_title: "Legibilidad",
+                paraphrasing_tool_title: "Herramienta de Parafraseo",
+                purpose_label: "Propósito",
+                purpose_option_humanize: "Humanización de IA",
+                purpose_option_improve: "Mejorar Gramática y Fluidez",
+                purpose_option_shorten: "Acortar",
+                purpose_option_expand: "Ampliar",
+                tone_label: "Tono",
+                tone_option_original: "Igual que el original",
+                tone_option_professional: "Más Profesional",
+                tone_option_casual: "Más Casual",
+                tone_option_confident: "Más Seguro",
+                tone_option_simpler: "Más Simple",
+                tone_option_persuasive: "Más Persuasivo",
+                difference_label: "Diferencia",
+                difference_option_minor: "Cambios Menores",
+                difference_option_balanced: "Equilibrado",
+                difference_option_major: "Revisión Principal",
+                paraphrase_button: "Parafrasear Texto",
+                paraphrase_placeholder: "El texto parafraseado aparecerá aquí...",
+                copy_button: "Copiar Texto",
+                copied_button: "¡Copiado!",
+                error_modal_title: "Ocurrió un Error",
+                error_modal_default_message: "No se pudo conectar al servicio de IA. Por favor, inténtelo de nuevo más tarde.",
+                error_modal_close_button: "Cerrar",
+                enter_text_to_analyze: "Por favor, introduce texto para analizar.",
+                enter_text_to_paraphrase: "Por favor, introduce texto para parafrasear.",
+                failed_to_copy: "Error al copiar el texto al portapapeles.",
+                safety_block_error: "La solicitud fue bloqueada por motivos de seguridad. Por favor, intente modificar su texto.",
+                invalid_response_error: "La IA devolvió una respuesta no válida o vacía. Inténtalo de nuevo."
+            },
+            zh: {
+                title: "文本洞察AI",
+                subtitle: "借助AI的力量，分析、理解和完善您的写作。",
+                your_text_title: "您的文本",
+                text_area_placeholder: "在此输入或粘贴您的文本...",
+                analyze_button: "分析文本",
+                analysis_title: "分析结果",
+                effectiveness_score_title: "效果评分",
+                effectiveness_reason_placeholder: "分析结果将显示在此处。",
+                waiting_for_text: "等待文本...",
+                formality_title: "正式性",
+                emotion_title: "情感",
+                readability_title: "可读性",
+                paraphrasing_tool_title: "改写工具",
+                purpose_label: "目的",
+                purpose_option_humanize: "AI人性化",
+                purpose_option_improve: "改善语法和流畅度",
+                purpose_option_shorten: "缩短",
+                purpose_option_expand: "扩写",
+                tone_label: "语气",
+                tone_option_original: "与原文相同",
+                tone_option_professional: "更专业",
+                tone_option_casual: "更随意",
+                tone_option_confident: "更自信",
+                tone_option_simpler: "更简单",
+                tone_option_persuasive: "更有说服力",
+                difference_label: "差异度",
+                difference_option_minor: "微小改动",
+                difference_option_balanced: "平衡",
+                difference_option_major: "大幅修改",
+                paraphrase_button: "改写文本",
+                paraphrase_placeholder: "改写后的文本将显示在此处...",
+                copy_button: "复制文本",
+                copied_button: "已复制！",
+                error_modal_title: "发生错误",
+                error_modal_default_message: "无法连接到AI服务。请稍后再试。",
+                error_modal_close_button: "关闭",
+                enter_text_to_analyze: "请输入要分析的文本。",
+                enter_text_to_paraphrase: "请输入要改写的文本。",
+                failed_to_copy: "无法将文本复制到剪贴板。",
+                safety_block_error: "由于安全原因，该请求已被阻止。请尝试修改您的文本。",
+                invalid_response_error: "AI返回了无效或空的响应。请再试一次。"
+            }
+        };
+
+        function updateUI(lang) {
+            const strings = uiStrings[lang];
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (strings[key]) {
+                    el.textContent = strings[key];
+                }
+            });
+            document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-translate-placeholder');
+                 if (strings[key]) {
+                    el.placeholder = strings[key];
+                }
+            });
+            document.querySelectorAll('[data-translate="waiting_for_text"]').forEach(p => {
+                if (p.textContent !== "Waiting for text..." && p.textContent !== "En attente de texte..." && p.textContent !== "Esperando texto..." && p.textContent !== "等待文本...") {
+                } else {
+                    p.textContent = strings.waiting_for_text;
+                }
+            });
+            effectivenessReason.placeholder = strings.effectiveness_reason_placeholder;
+            if(effectivenessReason.textContent === "Analysis will appear here." || effectivenessReason.textContent === "L'analyse apparaîtra ici." || effectivenessReason.textContent === "El análisis aparecerá aquí." || effectivenessReason.textContent === "分析结果将显示在此处。"){
+                effectivenessReason.textContent = strings.effectiveness_reason_placeholder;
+            }
+
+            copyBtnDefaultText = strings.copy_button;
+            const copyBtnSpan = copyBtn.querySelector('span');
+            if (copyBtnSpan.textContent !== strings.copied_button) {
+                copyBtnSpan.textContent = copyBtnDefaultText;
+            }
+        }
+        
+        async function callGeminiApi(payload, maxRetries = 3) {
+            let attempt = 0;
+            while (attempt < maxRetries) {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+                    }
+                    
+                    const result = await response.json();
+                    const candidate = result.candidates?.[0];
+
+                    if (!candidate || !candidate.content?.parts?.[0]?.text) {
+                       const lang = languageSelector.value;
+                       if (result.promptFeedback && result.promptFeedback.blockReason) {
+                           throw new Error(uiStrings[lang].safety_block_error);
+                       }
+                       throw new Error(uiStrings[lang].invalid_response_error);
+                    }
+
+                    return result;
+
+                } catch (error) {
+                    attempt++;
+                    console.error(`Attempt ${attempt} failed:`, error);
+                    if (attempt >= maxRetries) {
+                        throw error; // Re-throw the last error to be caught by the calling function
+                    }
+                    const delay = Math.pow(2, attempt) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+        
+        function resetAnalysisUI() {
+            const lang = languageSelector.value;
+            effectivenessBar.style.width = '0%';
+            effectivenessBar.className = 'h-4 rounded-full transition-all duration-500 bg-gray-400';
+            effectivenessReason.textContent = uiStrings[lang].effectiveness_reason_placeholder;
+            formalityResult.innerHTML = uiStrings[lang].waiting_for_text;
+            emotionResult.innerHTML = uiStrings[lang].waiting_for_text;
+            readabilityResult.innerHTML = uiStrings[lang].waiting_for_text;
+        }
+
+        async function analyzeText() {
+            const lang = languageSelector.value;
+            const text = inputText.value.trim();
+            if (!text) {
+                showErrorModal(uiStrings[lang].enter_text_to_analyze);
+                return;
+            }
+
+            analysisLoader.classList.remove('hidden');
+            analysisResultsEl.classList.add('hidden');
+            analyzeBtn.disabled = true;
+            analyzeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            resetAnalysisUI();
+
+            const languageMap = {en: "English", fr: "French", es: "Spanish", zh: "Simplified Chinese"};
+            const currentLanguage = languageMap[lang];
+
+            const systemPrompt = `You are a helpful text analysis expert. Analyze the user's text and provide insights on formality, primary emotion, readability, and an overall effectiveness score. Respond ONLY with a valid JSON object matching the provided schema, with no additional text or formatting. All string values in the JSON object (level, reason, primary) must be in ${currentLanguage}. If you cannot analyze the text, provide a reason in the 'reason' fields.`;
+
+            const userPrompt = `Please analyze the following text:\n\n---\n\n${text}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            effectiveness: { type: "OBJECT", properties: { score: { type: "INTEGER" }, reason: { type: "STRING" } } },
+                            formality: { type: "OBJECT", properties: { level: { type: "STRING" }, reason: { type: "STRING" } } },
+                            emotion: { type: "OBJECT", properties: { primary: { type: "STRING" }, reason: { type: "STRING" } } },
+                            readability: { type: "OBJECT", properties: { level: { type: "STRING" }, reason: { type: "STRING" } } }
+                        }
+                    }
+                }
+            };
+            
+            try {
+                const result = await callGeminiApi(payload);
+                const analysisData = JSON.parse(result.candidates[0].content.parts[0].text);
+                displayAnalysis(analysisData);
+            } catch (error) {
+                console.error('Analysis failed:', error);
+                showErrorModal(error.message || uiStrings[lang].error_modal_default_message);
+                resetAnalysisUI();
+            } finally {
+                analysisLoader.classList.add('hidden');
+                analysisResultsEl.classList.remove('hidden');
+                analyzeBtn.disabled = false;
+                analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function displayAnalysis(data) {
+            const { effectiveness, formality, emotion, readability } = data;
+            
+            const score = effectiveness.score || 0;
+            effectivenessBar.style.width = `${score}%`;
+            let barColorClass = 'bg-red-500';
+            if (score > 75) barColorClass = 'bg-green-500';
+            else if (score > 40) barColorClass = 'bg-yellow-500';
+            effectivenessBar.className = `h-4 rounded-full transition-all duration-500 ${barColorClass}`;
+            effectivenessReason.textContent = effectiveness.reason;
+
+            formalityResult.innerHTML = `<span class="font-medium text-blue-600">${formality.level}</span>: ${formality.reason}`;
+            emotionResult.innerHTML = `<span class="font-medium text-green-600">${emotion.primary}</span>: ${emotion.reason}`;
+            readabilityResult.innerHTML = `<span class="font-medium text-purple-600">${readability.level}</span>: ${readability.reason}`;
+        }
+
+        async function paraphraseText() {
+            const lang = languageSelector.value;
+            const text = inputText.value.trim();
+            if (!text) {
+                showErrorModal(uiStrings[lang].enter_text_to_paraphrase);
+                return;
+            }
+
+            paraphraseLoader.classList.remove('hidden');
+            outputText.value = '';
+            paraphraseBtn.disabled = true;
+            copyBtn.disabled = true;
+            paraphraseBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            copyBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
+
+            const toneSelect = document.getElementById('tone');
+            const purposeSelect = document.getElementById('purpose');
+
+            const tone = toneSelect.options[toneSelect.selectedIndex].text;
+            const difference = document.getElementById('difference').value;
+            const purpose = purposeSelect.options[purposeSelect.selectedIndex].text;
+
+            const languageMap = {en: "English", fr: "French", es: "Spanish", zh: "Simplified Chinese"};
+            const currentLanguage = languageMap[lang];
+            
+            let toneInstruction = `The desired tone is '${tone}'.`;
+            if (document.getElementById('tone').value === 'Same as original') {
+                toneInstruction = 'Match the tone of the original text.';
+            }
+            
+            const prompt = `Paraphrase the following text into ${currentLanguage}. The goal is to make it '${purpose}'. ${toneInstruction} The level of change from the original should be '${difference}'. Respond only with the paraphrased ${currentLanguage} text. If you are unable to paraphrase the text as requested, please respond with a brief explanation of why, in ${currentLanguage}.
+
+Original Text:
+---
+${text}
+---
+Paraphrased Text:`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 1024,
+                }
+            };
+            
+            try {
+                const result = await callGeminiApi(payload);
+                const paraphrasedText = result.candidates[0].content.parts[0].text;
+                outputText.value = paraphrasedText.trim();
+                copyBtn.disabled = false;
+                copyBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
+
+            } catch (error) {
+                console.error('Paraphrasing failed:', error);
+                showErrorModal(error.message || uiStrings[lang].error_modal_default_message);
+            } finally {
+                paraphraseLoader.classList.add('hidden');
+                paraphraseBtn.disabled = false;
+                paraphraseBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        function copyOutputText() {
+            const lang = languageSelector.value;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = outputText.value;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            try {
+                document.execCommand('copy');
+                const copyBtnSpan = copyBtn.querySelector('span');
+                copyBtnSpan.textContent = uiStrings[lang].copied_button;
+                setTimeout(() => {
+                    copyBtnSpan.textContent = copyBtnDefaultText;
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showErrorModal(uiStrings[lang].failed_to_copy);
+            }
+            document.body.removeChild(tempTextArea);
+        }
+
+        function showErrorModal(msg) {
+            errorMessage.textContent = msg;
+            errorModal.classList.remove('hidden');
+        }
+
+        // Event Listeners
+        languageSelector.addEventListener('change', (e) => updateUI(e.target.value));
+        analyzeBtn.addEventListener('click', analyzeText);
+        paraphraseBtn.addEventListener('click', paraphraseText);
+        copyBtn.addEventListener('click', copyOutputText);
+        closeModalBtn.addEventListener('click', () => errorModal.classList.add('hidden'));
+        window.addEventListener('click', (event) => {
+            if (event.target == errorModal) {
+                errorModal.classList.add('hidden');
+            }
+        });
+
+        // Initial UI setup
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI('en');
+        });
+
+    </script>
+
+</body>
+</html>
+
